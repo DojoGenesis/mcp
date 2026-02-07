@@ -21,65 +21,49 @@ The system's role is to reflect, clarify, and amplify the user's voice rather th
 
 The highest service is offering deep, non-judgmental understanding. The interaction is relational, not transactional.
 
-This creates a space where thinking can unfold without pressure or judgment. The system acts as a compassionate partner in the thinking process, not as an oracle or authority.
+This creates a space where thinking can unfold without pressure or judgment. The system acts as a compassionate partner in the thinking process, not as an oracle or authority.`
 }
 
 func getResources() []Resource {
 	return []Resource{
 		{
-			URI:         "dojo://aroma_philosophy",
-			Name:        "AROMA Philosophy",
+			Name:        "aroma_philosophy",
 			Description: "The complete philosophy of AROMA: A Sanctuary for Being",
-			MimeType:    "text/markdown",
 			Content:     getAromaPhilosophy(),
 		},
 		{
-			URI:         "dojo://eit_principles",
-			Name:        "EIT Core Principles",
+			Name:        "eit_principles",
 			Description: "The core principles of Emotional Interbeing Therapy from Serenity Valley",
-			MimeType:    "text/markdown",
 			Content:     getEITPrinciples(),
 		},
 		{
-			URI:         "dojo://collaboration_norms",
-			Name:        "Collaboration Norms",
+			Name:        "collaboration_norms",
 			Description: "The five core collaboration norms from the AROMA repository",
-			MimeType:    "text/markdown",
 			Content:     getCollaborationNorms(),
 		},
 		{
-			URI:         "dojo://sanctuary_design",
-			Name:        "Sanctuary Design Patterns",
+			Name:        "sanctuary_design",
 			Description: "Principles for designing digital spaces that are calm, inviting, and sacred",
-			MimeType:    "text/markdown",
 			Content:     getSanctuaryDesignPatterns(),
 		},
 		{
-			URI:         "dojo://wisdom_synthesis",
 			Name:        "wisdom_synthesis",
 			Description: "The complete synthesis of Dojo wisdom, philosophy, and patterns",
-			MimeType:    "text/markdown",
 			Content:     getWisdomSynthesis(),
 		},
 		{
-			URI:         "dojo://agent_protocol",
 			Name:        "agent_protocol",
 			Description: "The Dojo Agent Protocol v1.0: governance and operational framework",
-			MimeType:    "text/markdown",
 			Content:     getAgentProtocol(),
 		},
 		{
-			URI:         "dojo://four_modes",
 			Name:        "four_modes",
 			Description: "The Four Modes of Dojo: Mirror, Scout, Gardener, Implementation",
-			MimeType:    "text/markdown",
 			Content:     getFourModes(),
 		},
 		{
-			URI:         "dojo://planning_with_files",
 			Name:        "planning_with_files",
 			Description: "The planning-with-files pattern for persistent agent memory",
-			MimeType:    "text/markdown",
 			Content:     getPlanningWithFiles(),
 		},
 	}

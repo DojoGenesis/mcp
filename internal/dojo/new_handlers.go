@@ -2,7 +2,6 @@ package dojo
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/mark3labs/mcp-go/mcp"
@@ -15,7 +14,7 @@ func (h *Handler) handleCreateThinkingRoom(ctx context.Context, request mcp.Call
 		AgentName string `json:"agent_name"`
 	}
 
-	if err := json.Unmarshal(request.Params.Arguments, &params); err != nil {
+	if err := unmarshalArgs(request.Params.Arguments, &params); err != nil {
 		return nil, fmt.Errorf("invalid parameters: %w", err)
 	}
 
@@ -53,7 +52,7 @@ func (h *Handler) handleTraceLineage(ctx context.Context, request mcp.CallToolRe
 		IdeaOrInsight string `json:"idea_or_insight"`
 	}
 
-	if err := json.Unmarshal(request.Params.Arguments, &params); err != nil {
+	if err := unmarshalArgs(request.Params.Arguments, &params); err != nil {
 		return nil, fmt.Errorf("invalid parameters: %w", err)
 	}
 
@@ -67,8 +66,8 @@ func (h *Handler) handleTraceLineage(ctx context.Context, request mcp.CallToolRe
 			if i >= 5 {
 				break // Limit to top 5 results
 			}
-			lineageText += fmt.Sprintf("### %d. %s (%s)\n\n%s\n\n**Relevance:** %.1f%%\n\n", 
-				i+1, result.Name, result.Category, result.Description, result.Relevance*100)
+			lineageText += fmt.Sprintf("### %d. %s (%s)\n\n%s\n\n**Relevance:** %.1f%%\n\n",
+				i+1, result.Name, result.Type, result.Description, result.Relevance*100)
 		}
 	} else {
 		lineageText = "No direct matches found in the knowledge base. This may be a new insight worth documenting!\n\n"
@@ -108,7 +107,7 @@ func (h *Handler) handlePracticeInterAcceptance(ctx context.Context, request mcp
 		Situation string `json:"situation"`
 	}
 
-	if err := json.Unmarshal(request.Params.Arguments, &params); err != nil {
+	if err := unmarshalArgs(request.Params.Arguments, &params); err != nil {
 		return nil, fmt.Errorf("invalid parameters: %w", err)
 	}
 
@@ -171,7 +170,7 @@ func (h *Handler) handleExploreRadicalFreedom(ctx context.Context, request mcp.C
 		Situation string `json:"situation"`
 	}
 
-	if err := json.Unmarshal(request.Params.Arguments, &params); err != nil {
+	if err := unmarshalArgs(request.Params.Arguments, &params); err != nil {
 		return nil, fmt.Errorf("invalid parameters: %w", err)
 	}
 
@@ -248,7 +247,7 @@ func (h *Handler) handleCheckPace(ctx context.Context, request mcp.CallToolReque
 		SessionDescription string `json:"session_description"`
 	}
 
-	if err := json.Unmarshal(request.Params.Arguments, &params); err != nil {
+	if err := unmarshalArgs(request.Params.Arguments, &params); err != nil {
 		return nil, fmt.Errorf("invalid parameters: %w", err)
 	}
 

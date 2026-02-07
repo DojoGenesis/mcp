@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"os"
 
@@ -14,9 +13,8 @@ func main() {
 	s := server.NewMCPServer(
 		"dojo-genesis",
 		"1.0.0",
-		server.WithToolCapabilities(true),
-		server.WithPromptCapabilities(true),
-		server.WithResourceCapabilities(true),
+		server.WithResourceCapabilities(false, false),
+		server.WithPromptCapabilities(false),
 	)
 
 	// Initialize Dojo handler
@@ -32,7 +30,7 @@ func main() {
 	dojoHandler.RegisterResources(s)
 
 	// Start server with stdio transport
-	if err := s.Serve(context.Background(), server.WithStdio()); err != nil {
+	if err := server.ServeStdio(s); err != nil {
 		log.Fatalf("Server error: %v", err)
 		os.Exit(1)
 	}

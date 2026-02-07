@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "dojo": {
+      "command": "/Users/alfonsomorales/ZenflowProjects/dojo-mcp-server/dojo-mcp-server",
+      "args": []
+    }
+  }
+}

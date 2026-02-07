@@ -22,6 +22,15 @@ func NewHandler() *Handler {
 	}
 }
 
+// unmarshalArgs is a helper to convert map[string]interface{} arguments to a typed struct
+func unmarshalArgs(arguments map[string]interface{}, dest interface{}) error {
+	data, err := json.Marshal(arguments)
+	if err != nil {
+		return fmt.Errorf("failed to marshal arguments: %w", err)
+	}
+	return json.Unmarshal(data, dest)
+}
+
 // RegisterTools registers all Dojo tools with the MCP server
 func (h *Handler) RegisterTools(s *server.MCPServer) {
 	// dojo.reflect - The core Dojo thinking partner
@@ -123,6 +132,92 @@ func (h *Handler) RegisterTools(s *server.MCPServer) {
 			Properties: map[string]interface{}{},
 		},
 	}, h.handleGetPrinciples)
+
+	// v2.0 Tools: AROMA / Serenity Valley
+
+	// dojo.create_thinking_room - Create a structured space for focused reflection
+	s.AddTool(mcp.Tool{
+		Name:        "dojo.create_thinking_room",
+		Description: "Creates a structured, private space for focused reflection on a given topic.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"topic": map[string]interface{}{
+					"type":        "string",
+					"description": "The topic to reflect on",
+				},
+				"agent_name": map[string]interface{}{
+					"type":        "string",
+					"description": "The name of the agent or user creating the room",
+				},
+			},
+			Required: []string{"topic", "agent_name"},
+		},
+	}, h.handleCreateThinkingRoom)
+
+	// dojo.trace_lineage - Trace the sources and influences of an idea
+	s.AddTool(mcp.Tool{
+		Name:        "dojo.trace_lineage",
+		Description: "Traces the sources and influences of an idea or insight, searching the wisdom base for related content.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"idea_or_insight": map[string]interface{}{
+					"type":        "string",
+					"description": "The idea or insight to trace",
+				},
+			},
+			Required: []string{"idea_or_insight"},
+		},
+	}, h.handleTraceLineage)
+
+	// dojo.practice_inter_acceptance - Guided Inter-Acceptance exercise
+	s.AddTool(mcp.Tool{
+		Name:        "dojo.practice_inter_acceptance",
+		Description: "Guides through an Inter-Acceptance exercise from Serenity Valley's Emotional Interbeing Therapy.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"situation": map[string]interface{}{
+					"type":        "string",
+					"description": "The situation to practice inter-acceptance with",
+				},
+			},
+			Required: []string{"situation"},
+		},
+	}, h.handlePracticeInterAcceptance)
+
+	// dojo.explore_radical_freedom - Explore agency within constraints
+	s.AddTool(mcp.Tool{
+		Name:        "dojo.explore_radical_freedom",
+		Description: "Helps explore agency and freedom within constraints, based on Serenity Valley's Radical Freedom principle.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"situation": map[string]interface{}{
+					"type":        "string",
+					"description": "The constrained situation to explore",
+				},
+			},
+			Required: []string{"situation"},
+		},
+	}, h.handleExploreRadicalFreedom)
+
+	// dojo.check_pace - Assess pace of understanding vs extraction
+	s.AddTool(mcp.Tool{
+		Name:        "dojo.check_pace",
+		Description: "Assesses whether the current session pace is one of understanding or extraction, with recommendations.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"session_description": map[string]interface{}{
+					"type":        "string",
+					"description": "A description of the current session or work being done",
+				},
+			},
+			Required: []string{"session_description"},
+		},
+	}, h.handleCheckPace)
 }
 
 // Tool handlers
@@ -134,7 +229,7 @@ func (h *Handler) handleReflect(ctx context.Context, request mcp.CallToolRequest
 		Mode         string   `json:"mode"`
 	}
 
-	if err := json.Unmarshal(request.Params.Arguments, &args); err != nil {
+	if err := unmarshalArgs(request.Params.Arguments, &args); err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Invalid arguments: %v", err)), nil
 	}
 
@@ -148,7 +243,7 @@ func (h *Handler) handleSearchWisdom(ctx context.Context, request mcp.CallToolRe
 		Query string `json:"query"`
 	}
 
-	if err := json.Unmarshal(request.Params.Arguments, &args); err != nil {
+	if err := unmarshalArgs(request.Params.Arguments, &args); err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Invalid arguments: %v", err)), nil
 	}
 
@@ -163,7 +258,7 @@ func (h *Handler) handleGetSeed(ctx context.Context, request mcp.CallToolRequest
 		Name string `json:"name"`
 	}
 
-	if err := json.Unmarshal(request.Params.Arguments, &args); err != nil {
+	if err := unmarshalArgs(request.Params.Arguments, &args); err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Invalid arguments: %v", err)), nil
 	}
 
@@ -182,7 +277,7 @@ func (h *Handler) handleApplySeed(ctx context.Context, request mcp.CallToolReque
 		Situation string `json:"situation"`
 	}
 
-	if err := json.Unmarshal(request.Params.Arguments, &args); err != nil {
+	if err := unmarshalArgs(request.Params.Arguments, &args); err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Invalid arguments: %v", err)), nil
 	}
 
@@ -241,20 +336,20 @@ func (h *Handler) RegisterResources(s *server.MCPServer) {
 			URI:         fmt.Sprintf("dojo://%s", resourceCopy.Name),
 			Name:        resourceCopy.Name,
 			Description: resourceCopy.Description,
-			MimeType:    "text/markdown",
-		}, func(ctx context.Context, request mcp.ReadResourceRequest) (*mcp.ReadResourceResult, error) {
+			MIMEType:    "text/markdown",
+		}, func(ctx context.Context, request mcp.ReadResourceRequest) ([]interface{}, error) {
 			content, err := h.wisdomBase.GetResource(resourceCopy.Name)
 			if err != nil {
 				return nil, err
 			}
 
-			return &mcp.ReadResourceResult{
-				Contents: []interface{}{
-					mcp.TextResourceContents{
+			return []interface{}{
+				mcp.TextResourceContents{
+					ResourceContents: mcp.ResourceContents{
 						URI:      request.Params.URI,
-						MimeType: "text/markdown",
-						Text:     content,
+						MIMEType: "text/markdown",
 					},
+					Text: content,
 				},
 			}, nil
 		})
