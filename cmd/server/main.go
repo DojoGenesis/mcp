@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 
 	"github.com/TresPies-source/dojo-mcp-server/internal/dojo"
 	"github.com/mark3labs/mcp-go/server"
@@ -32,6 +31,5 @@ func main() {
 	// Start server with stdio transport
 	if err := server.ServeStdio(s); err != nil {
 		log.Fatalf("Server error: %v", err)
-		os.Exit(1)
 	}
 }

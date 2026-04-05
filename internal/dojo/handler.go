@@ -218,6 +218,50 @@ func (h *Handler) RegisterTools(s *server.MCPServer) {
 			Required: []string{"session_description"},
 		},
 	}, h.handleCheckPace)
+
+	// Skill Tools
+
+	// dojo.list_skills - List all available skills
+	s.AddTool(mcp.Tool{
+		Name:        "dojo.list_skills",
+		Description: "Lists all available Dojo Genesis skills with their descriptions and categories.",
+		InputSchema: mcp.ToolInputSchema{
+			Type:       "object",
+			Properties: map[string]interface{}{},
+		},
+	}, h.handleListSkills)
+
+	// dojo.get_skill - Retrieve a specific skill
+	s.AddTool(mcp.Tool{
+		Name:        "dojo.get_skill",
+		Description: "Retrieves a specific Dojo Genesis skill by name.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"name": map[string]interface{}{
+					"type":        "string",
+					"description": "The name of the skill (e.g., 'agent-to-agent-teaching')",
+				},
+			},
+			Required: []string{"name"},
+		},
+	}, h.handleGetSkill)
+
+	// dojo.search_skills - Search for skills
+	s.AddTool(mcp.Tool{
+		Name:        "dojo.search_skills",
+		Description: "Searches for skills matching a query across name, description, and content.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"query": map[string]interface{}{
+					"type":        "string",
+					"description": "The search query",
+				},
+			},
+			Required: []string{"query"},
+		},
+	}, h.handleSearchSkills)
 }
 
 // Tool handlers
@@ -309,7 +353,17 @@ func (h *Handler) RegisterPrompts(s *server.MCPServer) {
 			Name:        fmt.Sprintf("dojo.seed.%s", seedCopy.Name),
 			Description: seedCopy.Description,
 		}, func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
-			fullSeed, _ := h.wisdomBase.GetSeed(seedCopy.Name)
+			fullSeed, err := h.wisdomBase.GetSeed(seedCopy.Name)
+			if err != nil || fullSeed == nil {
+				return &mcp.GetPromptResult{
+					Messages: []mcp.PromptMessage{
+						{
+							Role:    "user",
+							Content: mcp.TextContent{Type: "text", Text: seedCopy.Description},
+						},
+					},
+				}, nil
+			}
 
 			return &mcp.GetPromptResult{
 				Messages: []mcp.PromptMessage{
@@ -477,4 +531,87 @@ Review the seed content above and consider how each principle or pattern applies
 2. What would successful application of this seed look like?
 3. What obstacles might prevent full application?
 4. What's the smallest step you could take to begin applying this seed?`, seed.Name, situation, seed.Content)
+}
+
+// Skill tool handlers
+
+func (h *Handler) handleListSkills(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	skills := h.wisdomBase.ListSkills()
+
+	response := "# Dojo Genesis Skills\n\n"
+
+	// Group by category
+	categories := make(map[string][]string)
+	for _, skill := range skills {
+		categories[skill.Category] = append(categories[skill.Category],
+			fmt.Sprintf("- **%s**: %s", skill.Name, skill.Description))
+	}
+
+	for category, skillList := range categories {
+		response += fmt.Sprintf("## %s\n\n", category)
+		for _, skillDesc := range skillList {
+			response += skillDesc + "\n"
+		}
+		response += "\n"
+	}
+
+	response += "\nUse `dojo.get_skill` to retrieve the full content of any skill."
+
+	return mcp.NewToolResultText(response), nil
+}
+
+func (h *Handler) handleGetSkill(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	var args struct {
+		Name string `json:"name"`
+	}
+
+	if err := unmarshalArgs(request.Params.Arguments, &args); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Invalid arguments: %v", err)), nil
+	}
+
+	skill, err := h.wisdomBase.GetSkill(args.Name)
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Skill not found: %v", err)), nil
+	}
+
+	response := fmt.Sprintf(`# %s
+
+**Category:** %s
+**Description:** %s
+
+---
+
+%s`, skill.Name, skill.Category, skill.Description, skill.Content)
+
+	return mcp.NewToolResultText(response), nil
+}
+
+func (h *Handler) handleSearchSkills(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	var args struct {
+		Query string `json:"query"`
+	}
+
+	if err := unmarshalArgs(request.Params.Arguments, &args); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Invalid arguments: %v", err)), nil
+	}
+
+	results := h.wisdomBase.SearchSkills(args.Query)
+
+	if len(results) == 0 {
+		return mcp.NewToolResultText("No skills found matching your query."), nil
+	}
+
+	response := fmt.Sprintf("# Skills Matching: %s\n\n", args.Query)
+	response += fmt.Sprintf("Found %d skill(s):\n\n", len(results))
+
+	for i, skill := range results {
+		response += fmt.Sprintf("## %d. %s\n\n", i+1, skill.Name)
+		response += fmt.Sprintf("**Category:** %s\n\n", skill.Category)
+		response += fmt.Sprintf("**Description:** %s\n\n", skill.Description)
+		response += "---\n\n"
+	}
+
+	response += "\nUse `dojo.get_skill` with the skill name to retrieve full content."
+
+	return mcp.NewToolResultText(response), nil
 }

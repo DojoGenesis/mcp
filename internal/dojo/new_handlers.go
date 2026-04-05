@@ -15,7 +15,7 @@ func (h *Handler) handleCreateThinkingRoom(ctx context.Context, request mcp.Call
 	}
 
 	if err := unmarshalArgs(request.Params.Arguments, &params); err != nil {
-		return nil, fmt.Errorf("invalid parameters: %w", err)
+		return mcp.NewToolResultError(fmt.Sprintf("invalid parameters: %v", err)), nil
 	}
 
 	response := fmt.Sprintf(`# Thinking Room: %s
@@ -53,7 +53,7 @@ func (h *Handler) handleTraceLineage(ctx context.Context, request mcp.CallToolRe
 	}
 
 	if err := unmarshalArgs(request.Params.Arguments, &params); err != nil {
-		return nil, fmt.Errorf("invalid parameters: %w", err)
+		return mcp.NewToolResultError(fmt.Sprintf("invalid parameters: %v", err)), nil
 	}
 
 	// Search the wisdom base for related content
@@ -108,7 +108,7 @@ func (h *Handler) handlePracticeInterAcceptance(ctx context.Context, request mcp
 	}
 
 	if err := unmarshalArgs(request.Params.Arguments, &params); err != nil {
-		return nil, fmt.Errorf("invalid parameters: %w", err)
+		return mcp.NewToolResultError(fmt.Sprintf("invalid parameters: %v", err)), nil
 	}
 
 	response := fmt.Sprintf(`# Inter-Acceptance Practice
@@ -171,7 +171,7 @@ func (h *Handler) handleExploreRadicalFreedom(ctx context.Context, request mcp.C
 	}
 
 	if err := unmarshalArgs(request.Params.Arguments, &params); err != nil {
-		return nil, fmt.Errorf("invalid parameters: %w", err)
+		return mcp.NewToolResultError(fmt.Sprintf("invalid parameters: %v", err)), nil
 	}
 
 	response := fmt.Sprintf(`# Radical Freedom Exploration
@@ -248,7 +248,7 @@ func (h *Handler) handleCheckPace(ctx context.Context, request mcp.CallToolReque
 	}
 
 	if err := unmarshalArgs(request.Params.Arguments, &params); err != nil {
-		return nil, fmt.Errorf("invalid parameters: %w", err)
+		return mcp.NewToolResultError(fmt.Sprintf("invalid parameters: %v", err)), nil
 	}
 
 	response := fmt.Sprintf(`# Pace Check: Understanding vs. Extraction
