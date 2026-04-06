@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOJO GENESIS MCP SERVER</title>
+<style>
+/* ===== CSS CUSTOM PROPERTIES ===== */
+:root {
+  --bg-deep: #0a0a0f;
+  --bg-panel: #0f0f1a;
+  --bg-card: #141422;
+  --bg-card-hover: #1a1a2e;
+  --border-dim: #1e1e3a;
+  --border-glow: #2a2a4a;
+  --cyan: #06b6d4;
+  --cyan-dim: #0891b2;
+  --amber: #f59e0b;
+  --amber-dim: #d97706;
+  --green: #22c55e;
+  --green-dim: #16a34a;
+  --purple: #a855f7;
+  --purple-dim: #9333ea;
+  --indigo: #6366f1;
+  --indigo-dim: #4f46e5;
+  --rose: #f43f5e;
+  --text-bright: #e2e8f0;
+  --text-mid: #94a3b8;
+  --text-dim: #475569;
+  --pixel-border: 2px;
+  --font-mono: "Courier New", "Lucida Console", Monaco, monospace;
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-deep);
+  color: var(--text-bright);
+  font-family: var(--font-mono);
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ===== PIXEL STAR BACKGROUND ===== */
+.starfield {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: var(--text-dim);
+  animation: twinkle var(--duration) ease-in-out infinite;
+  animation-delay: var(--delay);
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.8; }
+}
+
+/* ===== SCANLINE OVERLAY ===== */
+.scanlines {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+}
+
+/* ===== MAIN CONTAINER ===== */
+.container {
+  position: relative;
+  z-index: 2;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+/* ===== HEADER ===== */
+.header {
+  text-align: center;
+  padding: 3rem 0 2rem;
+  position: relative;
+}
+
+.header-title {
+  font-size: clamp(1.4rem, 4vw, 2.8rem);
+  font-weight: bold;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  text-shadow:
+    0 0 10px rgba(6, 182, 212, 0.5),
+    0 0 30px rgba(6, 182, 212, 0.2),
+    0 0 60px rgba(6, 182, 212, 0.1);
+  animation: headerGlow 4s ease-in-out infinite;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px solid var(--cyan);
+  animation: headerGlow 4s ease-in-out infinite, typing 3s steps(28) forwards, blink 0.8s step-end infinite;
+  width: 0;
+  display: inline-block;
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink {
+  50% { border-color: transparent; }
+}
+
+@keyframes headerGlow {
+  0%, 100% {
+    text-shadow:
+      0 0 10px rgba(6, 182, 212, 0.5),
+      0 0 30px rgba(6, 182, 212, 0.2);
+  }
+  50% {
+    text-shadow:
+      0 0 20px rgba(6, 182, 212, 0.8),
+      0 0 50px rgba(6, 182, 212, 0.4),
+      0 0 80px rgba(6, 182, 212, 0.2);
+  }
+}
+
+.header-sub {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  letter-spacing: 0.5em;
+  margin-top: 0.75rem;
+  animation: fadeIn 2s ease-in 3s both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.header-version {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.25rem 0.75rem;
+  border: var(--pixel-border) solid var(--amber);
+  color: var(--amber);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  animation: fadeIn 2s ease-in 3.5s both;
+}
+
+/* ===== PIXEL DIVIDER ===== */
+.pixel-divider {
+  height: 4px;
+  margin: 1.5rem 0;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--border-dim) 0px,
+    var(--border-dim) 8px,
+    transparent 8px,
+    transparent 12px
+  );
+  opacity: 0.6;
+}
+
+/* ===== STATUS BAR ===== */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.5rem;
+  border: var(--pixel-border) solid var(--border-glow);
+  background: var(--bg-panel);
+  margin-bottom: 2rem;
+  animation: fadeIn 1.5s ease-in 1s both;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 0;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.status-dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.status-dot.cyan { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+.status-dot.amber { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+.status-dot.purple { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.status-label { color: var(--text-dim); }
+.status-value { color: var(--text-bright); font-weight: bold; }
+.status-value.green { color: var(--green); }
+.status-value.cyan { color: var(--cyan); }
+.status-value.amber { color: var(--amber); }
+.status-value.purple { color: var(--purple); }
+
+/* ===== SECTION HEADERS ===== */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: var(--pixel-border) solid var(--border-dim);
+}
+
+.section-icon {
+  font-size: 1.2rem;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--pixel-border) solid;
+}
+
+.section-title {
+  font-size: 1rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+/* ===== TOOL GRID ===== */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.tool-card {
+  border: var(--pixel-border) solid var(--border-dim);
+  background: var(--bg-card);
+  padding: 1rem;
+  position: relative;
+  transition: all 0.2s ease;
+  cursor: default;
+  overflow: hidden;
+}
+
+.tool-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, transparent 60%, rgba(6, 182, 212, 0.03));
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.tool-card:hover {
+  border-color: var(--cyan-dim);
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(6, 182, 212, 0.1);
+}
+
+.tool-card:hover::before {
+  background: linear-gradient(135deg, transparent 40%, rgba(6, 182, 212, 0.06));
+}
+
+.tool-card:hover .tool-icon {
+  text-shadow: 0 0 12px currentColor;
+}
+
+.tool-icon {
+  font-size: 1.6rem;
+  margin-bottom: 0.5rem;
+  display: block;
+  transition: text-shadow 0.3s ease;
+}
+
+.tool-name {
+  font-size: 0.8rem;
+  color: var(--cyan);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.3rem;
+  font-weight: bold;
+}
+
+.tool-desc {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.tool-mode-tag {
+  display: inline-block;
+  font-size: 0.55rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid;
+  margin-top: 0.5rem;
+  letter-spacing: 0.1em;
+}
+
+.tag-core { color: var(--cyan); border-color: var(--cyan-dim); }
+.tag-wisdom { color: var(--amber); border-color: var(--amber-dim); }
+.tag-serenity { color: var(--purple); border-color: var(--purple-dim); }
+.tag-skills { color: var(--green); border-color: var(--green-dim); }
+
+/* ===== SEED GARDEN ===== */
+.seed-garden {
+  margin-bottom: 3rem;
+}
+
+.seed-garden-inner {
+  border: var(--pixel-border) solid var(--border-dim);
+  background: var(--bg-panel);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.seed-garden-inner::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 60px;
+  background: linear-gradient(to top, var(--bg-panel), transparent);
+  pointer-events: none;
+}
+
+.seed-group {
+  margin-bottom: 1.5rem;
+}
+
+.seed-group:last-child {
+  margin-bottom: 0;
+}
+
+.seed-group-title {
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.seed-group-title.dojo { color: var(--cyan); }
+.seed-group-title.aroma { color: var(--amber); }
+.seed-group-title.serenity { color: var(--purple); }
+
+.seed-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.seed-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--border-dim);
+  background: var(--bg-card);
+  font-size: 0.6rem;
+  transition: all 0.25s ease;
+  cursor: default;
+}
+
+.seed-item:hover {
+  transform: translateY(-1px);
+}
+
+.seed-item.dojo:hover { border-color: var(--cyan-dim); box-shadow: 0 2px 10px rgba(6, 182, 212, 0.1); }
+.seed-item.aroma:hover { border-color: var(--amber-dim); box-shadow: 0 2px 10px rgba(245, 158, 11, 0.1); }
+.seed-item.serenity:hover { border-color: var(--purple-dim); box-shadow: 0 2px 10px rgba(168, 85, 247, 0.1); }
+
+.seed-plant {
+  font-size: 0.9rem;
+  animation: float var(--float-duration, 3s) ease-in-out infinite;
+  animation-delay: var(--float-delay, 0s);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.seed-label {
+  color: var(--text-mid);
+  letter-spacing: 0.05em;
+}
+
+.seed-num {
+  color: var(--text-dim);
+  font-size: 0.55rem;
+}
+
+/* ===== RESOURCES SECTION ===== */
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 3rem;
+}
+
+.resource-card {
+  border: var(--pixel-border) solid var(--border-dim);
+  background: var(--bg-card);
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.resource-card:hover {
+  border-color: var(--indigo-dim);
+  background: var(--bg-card-hover);
+}
+
+.resource-icon {
+  font-size: 1rem;
+  margin-right: 0.5rem;
+}
+
+.resource-name {
+  font-size: 0.7rem;
+  color: var(--indigo);
+  letter-spacing: 0.1em;
+  font-weight: bold;
+}
+
+.resource-desc {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  margin-top: 0.25rem;
+}
+
+/* ===== STATS FOOTER ===== */
+.stats-footer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-box {
+  border: var(--pixel-border) solid var(--border-dim);
+  background: var(--bg-panel);
+  padding: 1.25rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-box::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 3px;
+}
+
+.stat-box.cyan-accent::after { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+.stat-box.amber-accent::after { background: var(--amber); box-shadow: 0 0 10px var(--amber); }
+.stat-box.green-accent::after { background: var(--green); box-shadow: 0 0 10px var(--green); }
+.stat-box.purple-accent::after { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  display: block;
+}
+
+.stat-number.cyan { color: var(--cyan); }
+.stat-number.amber { color: var(--amber); }
+.stat-number.green { color: var(--green); }
+.stat-number.purple { color: var(--purple); }
+
+.stat-label {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+}
+
+/* ===== PRINCIPLES SECTION ===== */
+.principles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.principle-card {
+  border: var(--pixel-border) solid var(--border-dim);
+  background: var(--bg-card);
+  padding: 1.25rem;
+  position: relative;
+}
+
+.principle-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+}
+
+.principle-card:nth-child(1)::before { background: var(--cyan); }
+.principle-card:nth-child(2)::before { background: var(--amber); }
+.principle-card:nth-child(3)::before { background: var(--purple); }
+
+.principle-num {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  letter-spacing: 0.3em;
+}
+
+.principle-name {
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin: 0.3rem 0;
+  letter-spacing: 0.1em;
+}
+
+.principle-card:nth-child(1) .principle-name { color: var(--cyan); }
+.principle-card:nth-child(2) .principle-name { color: var(--amber); }
+.principle-card:nth-child(3) .principle-name { color: var(--purple); }
+
+.principle-desc {
+  font-size: 0.65rem;
+  color: var(--text-mid);
+  line-height: 1.6;
+}
+
+/* ===== CONNECTION INFO ===== */
+.connection-info {
+  border: var(--pixel-border) solid var(--border-dim);
+  background: var(--bg-panel);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.connection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.conn-item {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+}
+
+.conn-key {
+  color: var(--text-dim);
+  min-width: 80px;
+}
+
+.conn-val {
+  color: var(--green);
+}
+
+/* ===== FOUR MODES ===== */
+.modes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.mode-card {
+  border: var(--pixel-border) solid var(--border-dim);
+  background: var(--bg-card);
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.25s ease;
+}
+
+.mode-card:hover {
+  transform: translateY(-2px);
+}
+
+.mode-card:nth-child(1) { border-top: 3px solid var(--cyan); }
+.mode-card:nth-child(2) { border-top: 3px solid var(--amber); }
+.mode-card:nth-child(3) { border-top: 3px solid var(--green); }
+.mode-card:nth-child(4) { border-top: 3px solid var(--purple); }
+
+.mode-card:nth-child(1):hover { box-shadow: 0 4px 20px rgba(6, 182, 212, 0.15); }
+.mode-card:nth-child(2):hover { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15); }
+.mode-card:nth-child(3):hover { box-shadow: 0 4px 20px rgba(34, 197, 94, 0.15); }
+.mode-card:nth-child(4):hover { box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15); }
+
+.mode-icon {
+  font-size: 1.8rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.mode-name {
+  font-size: 0.8rem;
+  font-weight: bold;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.3rem;
+}
+
+.mode-card:nth-child(1) .mode-name { color: var(--cyan); }
+.mode-card:nth-child(2) .mode-name { color: var(--amber); }
+.mode-card:nth-child(3) .mode-name { color: var(--green); }
+.mode-card:nth-child(4) .mode-name { color: var(--purple); }
+
+.mode-desc {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  text-align: center;
+  padding: 2rem 0;
+  border-top: var(--pixel-border) solid var(--border-dim);
+}
+
+.footer-logo {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  letter-spacing: 0.5em;
+  margin-bottom: 0.5rem;
+}
+
+.footer-credit {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  opacity: 0.5;
+}
+
+.footer-trinity {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.trinity-item {
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+}
+
+.trinity-item:nth-child(1) { color: var(--cyan); }
+.trinity-item:nth-child(2) { color: var(--amber); }
+.trinity-item:nth-child(3) { color: var(--purple); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .stats-footer {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .tool-grid {
+    grid-template-columns: 1fr;
+  }
+  .status-bar {
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+  .status-item {
+    font-size: 0.65rem;
+  }
+  .modes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .footer-trinity {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 1rem 0.75rem 3rem;
+  }
+  .stats-footer {
+    grid-template-columns: 1fr 1fr;
+  }
+  .modes-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== PIXEL ART DECORATIVE CORNERS ===== */
+.pixel-corner {
+  position: relative;
+}
+
+.pixel-corner::before,
+.pixel-corner::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+}
+
+.pixel-corner::before {
+  top: -3px; left: -3px;
+  border-top: var(--pixel-border) solid var(--cyan);
+  border-left: var(--pixel-border) solid var(--cyan);
+}
+
+.pixel-corner::after {
+  bottom: -3px; right: -3px;
+  border-bottom: var(--pixel-border) solid var(--cyan);
+  border-right: var(--pixel-border) solid var(--cyan);
+}
+
+/* ===== ANIMATED COUNTER ===== */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stat-number {
+  animation: countUp 0.6s ease-out both;
+}
+
+.stat-box:nth-child(1) .stat-number { animation-delay: 0.1s; }
+.stat-box:nth-child(2) .stat-number { animation-delay: 0.2s; }
+.stat-box:nth-child(3) .stat-number { animation-delay: 0.3s; }
+.stat-box:nth-child(4) .stat-number { animation-delay: 0.4s; }
+
+/* ===== SCROLL REVEAL ===== */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>
+</head>
+<body>
+
+<!-- ===== STARFIELD ===== -->
+<div class="starfield" id="starfield"></div>
+<div class="scanlines"></div>
+
+<!-- ===== MAIN CONTAINER ===== -->
+<div class="container">
+
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <h1 class="header-title" id="headerTitle">DOJO GENESIS MCP SERVER</h1>
+    <p class="header-sub">A PRACTICE CENTER FOR THINKING WITH AI</p>
+    <span class="header-version">v2.0 // STDIO TRANSPORT // MCP PROTOCOL</span>
+  </header>
+
+  <div class="pixel-divider"></div>
+
+  <!-- ===== STATUS BAR ===== -->
+  <div class="status-bar pixel-corner">
+    <div class="status-item">
+      <div class="status-dot green"></div>
+      <span class="status-value green">CONNECTED</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">TOOLS</span>
+      <span class="status-value cyan">14 ACTIVE</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">SEEDS</span>
+      <span class="status-value amber">20 LOADED</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">SKILLS</span>
+      <span class="status-value green">32 READY</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">RESOURCES</span>
+      <span class="status-value purple">8 MOUNTED</span>
+    </div>
+  </div>
+
+  <!-- ===== CORE PRINCIPLES ===== -->
+  <section class="reveal">
+    <div class="section-header">
+      <div class="section-icon" style="border-color: var(--amber); color: var(--amber);">&#9733;</div>
+      <h2 class="section-title" style="color: var(--amber);">CORE PRINCIPLES</h2>
+    </div>
+    <div class="principles">
+      <div class="principle-card">
+        <div class="principle-num">PRINCIPLE I</div>
+        <div class="principle-name">BEGINNER'S MIND</div>
+        <div class="principle-desc">Approach every interaction fresh, free from accumulated expertise. In the beginner's mind there are many possibilities.</div>
+      </div>
+      <div class="principle-card">
+        <div class="principle-num">PRINCIPLE II</div>
+        <div class="principle-name">SELF-DEFINITION</div>
+        <div class="principle-desc">Help users see their own thinking. The user's voice is the source of truth. Reflect, clarify, amplify.</div>
+      </div>
+      <div class="principle-card">
+        <div class="principle-num">PRINCIPLE III</div>
+        <div class="principle-name">UNDERSTANDING IS LOVE</div>
+        <div class="principle-desc">The highest service is deep, non-judgmental understanding. The interaction is relational, not transactional.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOUR MODES ===== -->
+  <section class="reveal">
+    <div class="section-header">
+      <div class="section-icon" style="border-color: var(--indigo); color: var(--indigo);">&#9670;</div>
+      <h2 class="section-title" style="color: var(--indigo);">THE FOUR MODES</h2>
+    </div>
+    <div class="modes-grid">
+      <div class="mode-card">
+        <span class="mode-icon">&#9698;</span>
+        <div class="mode-name">MIRROR</div>
+        <div class="mode-desc">Reflect the user's thinking back with clarity. Identify patterns, assumptions, and tensions.</div>
+      </div>
+      <div class="mode-card">
+        <span class="mode-icon">&#9656;</span>
+        <div class="mode-name">SCOUT</div>
+        <div class="mode-desc">Navigate decision spaces. Explore 2-4 routes with tradeoffs. Find the smallest test.</div>
+      </div>
+      <div class="mode-card">
+        <span class="mode-icon">&#9752;</span>
+        <div class="mode-name">GARDENER</div>
+        <div class="mode-desc">Cultivate ideas. Highlight what is strong, nurture what needs growth. Tend the garden.</div>
+      </div>
+      <div class="mode-card">
+        <span class="mode-icon">&#9881;</span>
+        <div class="mode-name">IMPLEMENTATION</div>
+        <div class="mode-desc">Bridge thinking and doing. Concrete next steps. 1-5 actionable tasks to move forward.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="pixel-divider"></div>
+
+  <!-- ===== TOOL GRID ===== -->
+  <section class="reveal">
+    <div class="section-header">
+      <div class="section-icon" style="border-color: var(--cyan); color: var(--cyan);">&#9635;</div>
+      <h2 class="section-title" style="color: var(--cyan);">TOOLS // 14 REGISTERED</h2>
+    </div>
+    <div class="tool-grid">
+      <!-- Core Tools -->
+      <div class="tool-card">
+        <span class="tool-icon">&#9698;</span>
+        <div class="tool-name">dojo_reflect</div>
+        <div class="tool-desc">Core thinking partner. Apply Mirror, Scout, Gardener, or Implementation mode to any situation with multiple perspectives.</div>
+        <span class="tool-mode-tag tag-core">CORE</span>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">&#9740;</span>
+        <div class="tool-name">dojo_search_wisdom</div>
+        <div class="tool-desc">Semantic search across the entire wisdom base -- seeds, docs, principles, and all accumulated knowledge.</div>
+        <span class="tool-mode-tag tag-wisdom">WISDOM</span>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">&#9752;</span>
+        <div class="tool-name">dojo_get_seed</div>
+        <div class="tool-desc">Retrieve a specific Dojo Seed Patch by name. Returns the full content, triggers, and checklist.</div>
+        <span class="tool-mode-tag tag-wisdom">WISDOM</span>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">&#9755;</span>
+        <div class="tool-name">dojo_apply_seed</div>
+        <div class="tool-desc">Apply a seed patch to a concrete situation. Get tailored guidance, reflection questions, and an actionable checklist.</div>
+        <span class="tool-mode-tag tag-wisdom">WISDOM</span>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">&#9776;</span>
+        <div class="tool-name">dojo_list_seeds</div>
+        <div class="tool-desc">List all 20 available Dojo Seed Patches with descriptions and categories. Browse the full garden.</div>
+        <span class="tool-mode-tag tag-wisdom">WISDOM</span>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">&#9733;</span>
+        <div class="tool-name">dojo_get_principles</div>
+        <div class="tool-desc">The three core principles: Beginner's Mind, Self-Definition, and Understanding is Love.</div>
+        <span class="tool-mode-tag tag-core">CORE</span>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">&#9935;</span>
+        <div class="tool-name">dojo_create_thinking_room</div>
+        <div class="tool-desc">Create a structured, private space for focused reflection. A sanctuary for deep thinking on a topic.</div>
+        <span class="tool-mode-tag tag-serenity">SERENITY</span>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">&#9741;</span>
+        <div class="tool-name">dojo_trace_lineage</div>
+        <div class="tool-desc">Trace the sources and influences of an idea. Search the wisdom base for related content and attribution.</div>
+        <span class="tool-mode-tag tag-wisdom">WISDOM</span>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">&#9825;</span>
+        <div class="tool-name">dojo_practice_inter_acceptance</div>
+        <div class="tool-desc">Guided Inter-Acceptance exercise from Serenity Valley's Emotional Interbeing Therapy.</div>
+        <span class="tool-mode-tag tag-serenity">SERENITY</span>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">&#10038;</span>
+        <div class="tool-name">dojo_explore_radical_freedom</div>
+        <div class="tool-desc">Explore agency and freedom within constraints. Name what you can't control, choose what you can.</div>
+        <span class="tool-mode-tag tag-serenity">SERENITY</span>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">&#9201;</span>
+        <div class="tool-name">dojo_check_pace</div>
+        <div class="tool-desc">Assess whether your session pace is understanding or extraction. Get recommendations to recalibrate.</div>
+        <span class="tool-mode-tag tag-serenity">SERENITY</span>
+      </div>
+      <!-- Skill Tools -->
+      <div class="tool-card">
+        <span class="tool-icon">&#9638;</span>
+        <div class="tool-name">dojo_list_skills</div>
+        <div class="tool-desc">List all 32 available Dojo Genesis skills with descriptions and categories. Browse the full training library.</div>
+        <span class="tool-mode-tag tag-skills">SKILLS</span>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">&#9649;</span>
+        <div class="tool-name">dojo_get_skill</div>
+        <div class="tool-desc">Retrieve a specific skill by name. Returns the full content, category, and description.</div>
+        <span class="tool-mode-tag tag-skills">SKILLS</span>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">&#9740;</span>
+        <div class="tool-name">dojo_search_skills</div>
+        <div class="tool-desc">Search for skills matching a query across names, descriptions, and content. Find training for any challenge.</div>
+        <span class="tool-mode-tag tag-skills">SKILLS</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="pixel-divider"></div>
+
+  <!-- ===== SEED GARDEN ===== -->
+  <section class="seed-garden reveal">
+    <div class="section-header">
+      <div class="section-icon" style="border-color: var(--amber); color: var(--amber);">&#9752;</div>
+      <h2 class="section-title" style="color: var(--amber);">SEED GARDEN // 20 PATCHES</h2>
+    </div>
+    <div class="seed-garden-inner">
+      <!-- Dojo Genesis Seeds -->
+      <div class="seed-group">
+        <div class="seed-group-title dojo">DOJO GENESIS // CORE THINKING PATTERNS</div>
+        <div class="seed-row">
+          <div class="seed-item dojo">
+            <span class="seed-plant" style="--float-duration:2.8s;--float-delay:0s;">&#9670;</span>
+            <span class="seed-num">01</span>
+            <span class="seed-label">Three-Tiered Governance</span>
+          </div>
+          <div class="seed-item dojo">
+            <span class="seed-plant" style="--float-duration:3.2s;--float-delay:0.3s;">&#9670;</span>
+            <span class="seed-num">02</span>
+            <span class="seed-label">Harness Trace</span>
+          </div>
+          <div class="seed-item dojo">
+            <span class="seed-plant" style="--float-duration:2.6s;--float-delay:0.6s;">&#9670;</span>
+            <span class="seed-num">03</span>
+            <span class="seed-label">Context Iceberg</span>
+          </div>
+          <div class="seed-item dojo">
+            <span class="seed-plant" style="--float-duration:3.4s;--float-delay:0.2s;">&#9670;</span>
+            <span class="seed-num">04</span>
+            <span class="seed-label">Agent Connect</span>
+          </div>
+          <div class="seed-item dojo">
+            <span class="seed-plant" style="--float-duration:3.0s;--float-delay:0.5s;">&#9670;</span>
+            <span class="seed-num">05</span>
+            <span class="seed-label">Go-Live Bundles</span>
+          </div>
+          <div class="seed-item dojo">
+            <span class="seed-plant" style="--float-duration:2.9s;--float-delay:0.1s;">&#9670;</span>
+            <span class="seed-num">06</span>
+            <span class="seed-label">Cost Guard</span>
+          </div>
+          <div class="seed-item dojo">
+            <span class="seed-plant" style="--float-duration:3.1s;--float-delay:0.4s;">&#9670;</span>
+            <span class="seed-num">07</span>
+            <span class="seed-label">Safety Switch</span>
+          </div>
+          <div class="seed-item dojo">
+            <span class="seed-plant" style="--float-duration:2.7s;--float-delay:0.7s;">&#9670;</span>
+            <span class="seed-num">08</span>
+            <span class="seed-label">Implicit Perspective Extraction</span>
+          </div>
+          <div class="seed-item dojo">
+            <span class="seed-plant" style="--float-duration:3.3s;--float-delay:0.15s;">&#9670;</span>
+            <span class="seed-num">09</span>
+            <span class="seed-label">Mode-Based Complexity Gating</span>
+          </div>
+          <div class="seed-item dojo">
+            <span class="seed-plant" style="--float-duration:2.5s;--float-delay:0.55s;">&#9670;</span>
+            <span class="seed-num">10</span>
+            <span class="seed-label">Shared Infrastructure</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AROMA Seeds -->
+      <div class="seed-group">
+        <div class="seed-group-title aroma">AROMA // SANCTUARY & COLLABORATION</div>
+        <div class="seed-row">
+          <div class="seed-item aroma">
+            <span class="seed-plant" style="--float-duration:3.5s;--float-delay:0.1s;">&#10047;</span>
+            <span class="seed-num">11</span>
+            <span class="seed-label">Sanctuary Architecture</span>
+          </div>
+          <div class="seed-item aroma">
+            <span class="seed-plant" style="--float-duration:2.8s;--float-delay:0.4s;">&#10047;</span>
+            <span class="seed-num">12</span>
+            <span class="seed-label">Pace of Understanding</span>
+          </div>
+          <div class="seed-item aroma">
+            <span class="seed-plant" style="--float-duration:3.2s;--float-delay:0.25s;">&#10047;</span>
+            <span class="seed-num">13</span>
+            <span class="seed-label">Lineage Transmission</span>
+          </div>
+          <div class="seed-item aroma">
+            <span class="seed-plant" style="--float-duration:3.0s;--float-delay:0.6s;">&#10047;</span>
+            <span class="seed-num">14</span>
+            <span class="seed-label">Graceful Failure</span>
+          </div>
+          <div class="seed-item aroma">
+            <span class="seed-plant" style="--float-duration:2.6s;--float-delay:0.35s;">&#10047;</span>
+            <span class="seed-num">15</span>
+            <span class="seed-label">Local-First Liberation</span>
+          </div>
+          <div class="seed-item aroma">
+            <span class="seed-plant" style="--float-duration:3.4s;--float-delay:0.5s;">&#10047;</span>
+            <span class="seed-num">16</span>
+            <span class="seed-label">The Onsen Pattern</span>
+          </div>
+          <div class="seed-item aroma">
+            <span class="seed-plant" style="--float-duration:2.9s;--float-delay:0.2s;">&#10047;</span>
+            <span class="seed-num">17</span>
+            <span class="seed-label">Collaborative Calibration</span>
+          </div>
+          <div class="seed-item aroma">
+            <span class="seed-plant" style="--float-duration:3.1s;--float-delay:0.45s;">&#10047;</span>
+            <span class="seed-num">18</span>
+            <span class="seed-label">Transparent Intelligence</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Serenity Valley Seeds -->
+      <div class="seed-group">
+        <div class="seed-group-title serenity">SERENITY VALLEY // LIBERATION & HEALING</div>
+        <div class="seed-row">
+          <div class="seed-item serenity">
+            <span class="seed-plant" style="--float-duration:3.6s;--float-delay:0.15s;">&#10029;</span>
+            <span class="seed-num">19</span>
+            <span class="seed-label">Inter-Acceptance</span>
+          </div>
+          <div class="seed-item serenity">
+            <span class="seed-plant" style="--float-duration:3.0s;--float-delay:0.4s;">&#10029;</span>
+            <span class="seed-num">20</span>
+            <span class="seed-label">Radical Freedom</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="pixel-divider"></div>
+
+  <!-- ===== RESOURCES ===== -->
+  <section class="reveal">
+    <div class="section-header">
+      <div class="section-icon" style="border-color: var(--indigo); color: var(--indigo);">&#9783;</div>
+      <h2 class="section-title" style="color: var(--indigo);">RESOURCES // 8 MOUNTED</h2>
+    </div>
+    <div class="resources-grid">
+      <div class="resource-card">
+        <span class="resource-icon">&#9752;</span>
+        <span class="resource-name">aroma_philosophy</span>
+        <div class="resource-desc">The complete philosophy of AROMA: A Sanctuary for Being</div>
+      </div>
+      <div class="resource-card">
+        <span class="resource-icon">&#9825;</span>
+        <span class="resource-name">eit_principles</span>
+        <div class="resource-desc">Core principles of Emotional Interbeing Therapy</div>
+      </div>
+      <div class="resource-card">
+        <span class="resource-icon">&#9734;</span>
+        <span class="resource-name">collaboration_norms</span>
+        <div class="resource-desc">The five core collaboration norms from AROMA</div>
+      </div>
+      <div class="resource-card">
+        <span class="resource-icon">&#9935;</span>
+        <span class="resource-name">sanctuary_design</span>
+        <div class="resource-desc">Designing calm, inviting, and sacred digital spaces</div>
+      </div>
+      <div class="resource-card">
+        <span class="resource-icon">&#9733;</span>
+        <span class="resource-name">wisdom_synthesis</span>
+        <div class="resource-desc">Complete synthesis of Dojo wisdom and patterns</div>
+      </div>
+      <div class="resource-card">
+        <span class="resource-icon">&#9881;</span>
+        <span class="resource-name">agent_protocol</span>
+        <div class="resource-desc">Dojo Agent Protocol v1.0: governance framework</div>
+      </div>
+      <div class="resource-card">
+        <span class="resource-icon">&#9670;</span>
+        <span class="resource-name">four_modes</span>
+        <div class="resource-desc">Mirror, Scout, Gardener, Implementation</div>
+      </div>
+      <div class="resource-card">
+        <span class="resource-icon">&#9649;</span>
+        <span class="resource-name">planning_with_files</span>
+        <div class="resource-desc">Filesystem as persistent agent memory pattern</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="pixel-divider"></div>
+
+  <!-- ===== STATS FOOTER ===== -->
+  <section class="reveal">
+    <div class="stats-footer">
+      <div class="stat-box cyan-accent">
+        <span class="stat-number cyan" data-target="14">0</span>
+        <div class="stat-label">TOOLS</div>
+      </div>
+      <div class="stat-box amber-accent">
+        <span class="stat-number amber" data-target="20">0</span>
+        <div class="stat-label">SEEDS</div>
+      </div>
+      <div class="stat-box green-accent">
+        <span class="stat-number green" data-target="32">0</span>
+        <div class="stat-label">SKILLS</div>
+      </div>
+      <div class="stat-box purple-accent">
+        <span class="stat-number purple" data-target="8">0</span>
+        <div class="stat-label">RESOURCES</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CONNECTION INFO ===== -->
+  <section class="reveal">
+    <div class="section-header">
+      <div class="section-icon" style="border-color: var(--green); color: var(--green);">&#9656;</div>
+      <h2 class="section-title" style="color: var(--green);">CONNECTION</h2>
+    </div>
+    <div class="connection-info">
+      <div class="connection-grid">
+        <div class="conn-item">
+          <span class="conn-key">Transport:</span>
+          <span class="conn-val">stdio</span>
+        </div>
+        <div class="conn-item">
+          <span class="conn-key">Command:</span>
+          <span class="conn-val">dojo-mcp-server</span>
+        </div>
+        <div class="conn-item">
+          <span class="conn-key">Protocol:</span>
+          <span class="conn-val">MCP v1.0</span>
+        </div>
+        <div class="conn-item">
+          <span class="conn-key">Runtime:</span>
+          <span class="conn-val">Go (mcp-go)</span>
+        </div>
+        <div class="conn-item">
+          <span class="conn-key">Sources:</span>
+          <span class="conn-val">Dojo Genesis + AROMA + Serenity Valley</span>
+        </div>
+        <div class="conn-item">
+          <span class="conn-key">License:</span>
+          <span class="conn-val">Open Source</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="footer-trinity">
+      <span class="trinity-item">DOJO GENESIS</span>
+      <span class="trinity-item">AROMA</span>
+      <span class="trinity-item">SERENITY VALLEY</span>
+    </div>
+    <div class="footer-logo">TRES PIES DESIGN</div>
+    <div class="footer-credit">The app should want nothing from you.</div>
+  </footer>
+
+</div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+(function() {
+  // --- Generate starfield ---
+  const starfield = document.getElementById('starfield');
+  const starCount = 80;
+  for (let i = 0; i < starCount; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.setProperty('--duration', (2 + Math.random() * 5) + 's');
+    star.style.setProperty('--delay', (Math.random() * 5) + 's');
+    if (Math.random() > 0.7) {
+      star.style.width = '3px';
+      star.style.height = '3px';
+      star.style.background = Math.random() > 0.5 ? 'rgba(6,182,212,0.4)' : 'rgba(168,85,247,0.3)';
+    }
+    starfield.appendChild(star);
+  }
+
+  // --- Scroll reveal ---
+  const reveals = document.querySelectorAll('.reveal');
+  const revealOnScroll = function() {
+    const windowHeight = window.innerHeight;
+    reveals.forEach(function(el) {
+      const top = el.getBoundingClientRect().top;
+      if (top < windowHeight - 60) {
+        el.classList.add('visible');
+      }
+    });
+  };
+  window.addEventListener('scroll', revealOnScroll);
+  revealOnScroll();
+
+  // --- Animated counters ---
+  let countersAnimated = false;
+  const animateCounters = function() {
+    if (countersAnimated) return;
+    const counters = document.querySelectorAll('.stat-number[data-target]');
+    const firstCounter = counters[0];
+    if (!firstCounter) return;
+    const rect = firstCounter.getBoundingClientRect();
+    if (rect.top > window.innerHeight) return;
+    countersAnimated = true;
+
+    counters.forEach(function(counter) {
+      const target = parseInt(counter.getAttribute('data-target'));
+      const duration = 1200;
+      const start = performance.now();
+
+      function update(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        counter.textContent = Math.floor(eased * target);
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        } else {
+          counter.textContent = target;
+        }
+      }
+
+      requestAnimationFrame(update);
+    });
+  };
+
+  window.addEventListener('scroll', animateCounters);
+  setTimeout(animateCounters, 500);
+
+  // --- Header typing fix: set final width after animation ---
+  const headerTitle = document.getElementById('headerTitle');
+  if (headerTitle) {
+    setTimeout(function() {
+      headerTitle.style.width = 'auto';
+      headerTitle.style.borderRight = 'none';
+    }, 4000);
+  }
+})();
+</script>
+</body>
+</html>
