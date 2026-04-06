@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/TresPies-source/dojo-mcp-server/internal/wisdom"
+	"github.com/DojoGenesis/mcp-server/internal/wisdom"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
@@ -22,8 +22,10 @@ func NewHandler() *Handler {
 	}
 }
 
-// unmarshalArgs is a helper to convert map[string]interface{} arguments to a typed struct
-func unmarshalArgs(arguments map[string]interface{}, dest interface{}) error {
+// unmarshalArgs is a helper to convert arguments (any type) to a typed struct.
+// It supports both map[string]interface{} (legacy) and other types by
+// round-tripping through JSON.
+func unmarshalArgs(arguments any, dest interface{}) error {
 	data, err := json.Marshal(arguments)
 	if err != nil {
 		return fmt.Errorf("failed to marshal arguments: %w", err)
@@ -293,7 +295,10 @@ func (h *Handler) handleSearchWisdom(ctx context.Context, request mcp.CallToolRe
 
 	results := h.wisdomBase.Search(args.Query)
 
-	resultsJSON, _ := json.MarshalIndent(results, "", "  ")
+	resultsJSON, err := json.MarshalIndent(results, "", "  ")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("failed to marshal response: %v", err)), nil
+	}
 	return mcp.NewToolResultText(string(resultsJSON)), nil
 }
 
@@ -311,7 +316,10 @@ func (h *Handler) handleGetSeed(ctx context.Context, request mcp.CallToolRequest
 		return mcp.NewToolResultError(fmt.Sprintf("Seed not found: %v", err)), nil
 	}
 
-	seedJSON, _ := json.MarshalIndent(seed, "", "  ")
+	seedJSON, err := json.MarshalIndent(seed, "", "  ")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("failed to marshal response: %v", err)), nil
+	}
 	return mcp.NewToolResultText(string(seedJSON)), nil
 }
 
@@ -333,7 +341,10 @@ func (h *Handler) handleApplySeed(ctx context.Context, request mcp.CallToolReque
 func (h *Handler) handleListSeeds(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	seeds := h.wisdomBase.ListSeeds()
 
-	seedsJSON, _ := json.MarshalIndent(seeds, "", "  ")
+	seedsJSON, err := json.MarshalIndent(seeds, "", "  ")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("failed to marshal response: %v", err)), nil
+	}
 	return mcp.NewToolResultText(string(seedsJSON)), nil
 }
 
@@ -357,23 +368,14 @@ func (h *Handler) RegisterPrompts(s *server.MCPServer) {
 			if err != nil || fullSeed == nil {
 				return &mcp.GetPromptResult{
 					Messages: []mcp.PromptMessage{
-						{
-							Role:    "user",
-							Content: mcp.TextContent{Type: "text", Text: seedCopy.Description},
-						},
+						mcp.NewPromptMessage(mcp.RoleUser, mcp.NewTextContent(seedCopy.Description)),
 					},
 				}, nil
 			}
 
 			return &mcp.GetPromptResult{
 				Messages: []mcp.PromptMessage{
-					{
-						Role: "user",
-						Content: mcp.TextContent{
-							Type: "text",
-							Text: fullSeed.Content,
-						},
-					},
+					mcp.NewPromptMessage(mcp.RoleUser, mcp.NewTextContent(fullSeed.Content)),
 				},
 			}, nil
 		})
@@ -391,19 +393,17 @@ func (h *Handler) RegisterResources(s *server.MCPServer) {
 			Name:        resourceCopy.Name,
 			Description: resourceCopy.Description,
 			MIMEType:    "text/markdown",
-		}, func(ctx context.Context, request mcp.ReadResourceRequest) ([]interface{}, error) {
+		}, func(ctx context.Context, request mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
 			content, err := h.wisdomBase.GetResource(resourceCopy.Name)
 			if err != nil {
 				return nil, err
 			}
 
-			return []interface{}{
+			return []mcp.ResourceContents{
 				mcp.TextResourceContents{
-					ResourceContents: mcp.ResourceContents{
-						URI:      request.Params.URI,
-						MIMEType: "text/markdown",
-					},
-					Text: content,
+					URI:      request.Params.URI,
+					MIMEType: "text/markdown",
+					Text:     content,
 				},
 			}, nil
 		})
