@@ -10,8 +10,8 @@ import (
 func TestServerInitializes(t *testing.T) {
 	s := server.NewMCPServer(
 		"dojo-mcp-server",
-		"2.1.0",
-		server.WithResourceCapabilities(false, false),
+		"3.0.0",
+		server.WithResourceCapabilities(true, false),
 		server.WithPromptCapabilities(false),
 	)
 	if s == nil {
@@ -22,18 +22,40 @@ func TestServerInitializes(t *testing.T) {
 func TestHandlerRegistration(t *testing.T) {
 	s := server.NewMCPServer(
 		"dojo-mcp-server",
-		"2.1.0",
-		server.WithResourceCapabilities(false, false),
+		"3.0.0",
+		server.WithResourceCapabilities(true, false),
 		server.WithPromptCapabilities(false),
 	)
 
-	dojoHandler := dojo.NewHandler()
+	tmpDir := t.TempDir()
+	dojoHandler, err := dojo.NewHandler("", tmpDir)
+	if err != nil {
+		t.Fatalf("NewHandler returned error: %v", err)
+	}
 	if dojoHandler == nil {
 		t.Fatal("NewHandler returned nil")
 	}
 
 	// These should not panic
 	dojoHandler.RegisterTools(s)
-	dojoHandler.RegisterPrompts(s)
+	dojoHandler.RegisterResources(s)
+}
+
+func TestHandlerRegistration_WithSkillsPath(t *testing.T) {
+	s := server.NewMCPServer(
+		"dojo-mcp-server",
+		"3.0.0",
+		server.WithResourceCapabilities(true, false),
+		server.WithPromptCapabilities(false),
+	)
+
+	tmpDir := t.TempDir()
+	// Non-existent skills path should fall back to bundled
+	dojoHandler, err := dojo.NewHandler("/nonexistent", tmpDir)
+	if err != nil {
+		t.Fatalf("NewHandler returned error: %v", err)
+	}
+
+	dojoHandler.RegisterTools(s)
 	dojoHandler.RegisterResources(s)
 }

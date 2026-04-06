@@ -1,8 +1,8 @@
 # Dojo Genesis MCP Server -- Status
 
-**Version:** 2.1.0
+**Version:** 3.0.0
 **Module:** `github.com/DojoGenesis/mcp-server`
-**Last Updated:** 2026-04-09
+**Last Updated:** 2026-04-05
 
 ## Health
 
@@ -10,7 +10,7 @@
 |-------|--------|
 | `go build ./...` | Pass |
 | `go vet ./...` | Pass |
-| `go test ./...` | Pass |
+| `go test -race ./...` | Pass (90+ tests) |
 | CI pipeline | Configured (.github/workflows/ci.yml) |
 | Release config | Configured (.goreleaser.yml) |
 
@@ -18,29 +18,38 @@
 
 | Category | Count | Details |
 |----------|-------|---------|
-| Tools | 14 | 6 core + 5 AROMA/Serenity Valley + 3 skill tools |
+| Tools | 7 | scout, invoke_skill, search_skills, apply_seed, log_decision, reflect, list_skills |
 | Seed Patches | 20 | 10 Dojo Genesis + 10 AROMA/Serenity Valley |
-| Skills | 32 | 8 categories (learning, strategy, process, workflow, meta, reflection, memory, development) |
-| Resources | 8 | Philosophy, principles, norms, design patterns, synthesis, protocol, modes, planning |
-| Prompts | 20 | One per seed patch |
+| Skills | 15 bundled / 60 with CoworkPlugins | Loaded from SKILL.md files at startup |
+| Resources | 8 + skills | Philosophy, principles, norms, design, synthesis, protocol, modes, planning + all loaded skills |
 
 ## Dependencies
 
 | Dependency | Version | Notes |
 |------------|---------|-------|
 | Go | 1.23+ | Required |
-| `mcp-go` | v0.47.0 | Latest as of 2026-04-09 |
-| `google/uuid` | v1.6.0 | Indirect (via mcp-go) |
+| `mcp-go` | v0.47.0 | MCP protocol library |
+| `gopkg.in/yaml.v3` | latest | YAML frontmatter parsing |
+
+## Configuration
+
+| Env Var | Default | Description |
+|---------|---------|-------------|
+| `DOJO_SKILLS_PATH` | (bundled) | Path to CoworkPlugins directory |
+| `DOJO_ADR_PATH` | `./decisions` | ADR output directory |
 
 ## Architecture
 
 - **Transport:** stdio (standard MCP transport)
-- **Binary:** Single self-contained executable, no config files needed
-- **All content embedded:** Seeds, skills, resources, and principles compiled into the binary
-- **Search:** Keyword-based relevance scoring across all wisdom content
+- **Binary:** Single self-contained executable
+- **Skills:** Loaded from filesystem at startup, with bundled fallback
+- **Write capability:** `dojo.log_decision` writes ADR markdown files to disk
+- **Search:** Keyword + trigger-based relevance scoring
 
-## Known Limitations
+## What Changed in v3.0.0
 
-- Search uses keyword matching, not semantic/vector search
-- Skills content is summary-length (full content would be loaded from external files in a future version)
-- No hot-reload of content (requires rebuild)
+- 14 tools -> 7 tools (fewer, each does something real)
+- Hardcoded skills -> file-backed from CoworkPlugins (60 SKILL.md files)
+- Static templates -> structured methodology scaffolds
+- Read-only -> one write tool (`log_decision`)
+- No configuration -> `DOJO_SKILLS_PATH` and `DOJO_ADR_PATH` env vars

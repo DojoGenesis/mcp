@@ -1,6 +1,8 @@
 # Dojo Genesis MCP Server
 
-A Model Context Protocol (MCP) server that brings the complete Dojo Genesis thinking partnership ecosystem to any MCP-compatible AI host. 14 tools, 20 seed patches, 32 skills, and 8 documentation resources -- all accessible over stdio.
+The methodology layer for Claude Code -- the first MCP server that makes Claude measurably better at software development decisions by encoding 60 battle-tested thinking frameworks as active cognitive scaffolds.
+
+Every other MCP server gives Claude more data. This one gives Claude better *methods*.
 
 <!-- Badges -->
 [![CI](https://github.com/DojoGenesis/mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/DojoGenesis/mcp-server/actions/workflows/ci.yml)
@@ -21,7 +23,10 @@ Add to your project's `.claude/settings.json`:
   "mcpServers": {
     "dojo": {
       "command": "/path/to/dojo-mcp-server",
-      "args": []
+      "env": {
+        "DOJO_SKILLS_PATH": "/path/to/CoworkPluginsByDojoGenesis",
+        "DOJO_ADR_PATH": "./decisions"
+      }
     }
   }
 }
@@ -49,19 +54,12 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
   "mcpServers": {
     "dojo": {
       "command": "/path/to/dojo-mcp-server",
-      "args": []
+      "env": {
+        "DOJO_SKILLS_PATH": "/path/to/CoworkPluginsByDojoGenesis",
+        "DOJO_ADR_PATH": "./decisions"
+      }
     }
   }
-}
-```
-
-### Any MCP-compatible Host (Generic stdio)
-
-```json
-{
-  "command": "/path/to/dojo-mcp-server",
-  "args": [],
-  "transport": "stdio"
 }
 ```
 
@@ -69,24 +67,23 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 
 ## What's Included
 
-### Tools (14)
+### Tools (7)
 
 | Tool | Description |
 |------|-------------|
-| `dojo_reflect` | The core Dojo thinking partner. Applies Mirror, Scout, Gardener, or Implementation mode to a situation with multiple perspectives. |
-| `dojo_search_wisdom` | Semantic search across all seed patches, documentation, and principles. |
-| `dojo_get_seed` | Retrieve a specific Dojo Seed Patch by name. |
-| `dojo_apply_seed` | Apply a Seed Patch to a given situation with guidance and checklist. |
-| `dojo_list_seeds` | List all 20 available Seed Patches with descriptions. |
-| `dojo_get_principles` | Retrieve the three core principles: Beginner's Mind, Self-Definition, Understanding is Love. |
-| `dojo_create_thinking_room` | Create a structured, private space for focused reflection on a topic. |
-| `dojo_trace_lineage` | Trace the sources and influences of an idea, searching the wisdom base for related content. |
-| `dojo_practice_inter_acceptance` | Guided Inter-Acceptance exercise from Serenity Valley's Emotional Interbeing Therapy. |
-| `dojo_explore_radical_freedom` | Explore agency and freedom within constraints. |
-| `dojo_check_pace` | Assess whether the current session pace is understanding or extraction. |
-| `dojo_list_skills` | List all 32 skills with descriptions and categories. |
-| `dojo_get_skill` | Retrieve a specific skill by name with full content. |
-| `dojo_search_skills` | Search skills by keyword across name, description, and content. |
+| `dojo.scout` | 4-step strategic analysis scaffold. Frame tension, scout routes, synthesize, decide. |
+| `dojo.invoke_skill` | Load a specific methodology skill by name. Returns the full workflow as actionable steps. |
+| `dojo.search_skills` | Search the methodology library for skills matching a query. |
+| `dojo.apply_seed` | Apply a reusable thinking pattern (seed) to a specific situation with checklist. |
+| `dojo.log_decision` | Write an Architecture Decision Record (ADR) to disk. The only write-capable tool. |
+| `dojo.reflect` | Structured reflection grounded in matched skills and seeds from the methodology library. |
+| `dojo.list_skills` | List all available skills grouped by plugin category. |
+
+### Skills (60 from CoworkPlugins, 15 bundled)
+
+Skills are complete, battle-tested methodology workflows loaded from SKILL.md files at startup. When `DOJO_SKILLS_PATH` is set, all 60 CoworkPlugins skills are available. Without it, 15 key skills are bundled in the binary.
+
+**Bundled skills:** `strategic-scout`, `release-specification`, `implementation-prompt`, `debugging`, `retrospective`, `pre-implementation-checklist`, `parallel-tracks`, `health-audit`, `seed-extraction`, `memory-garden`, `context-ingestion`, `research-modes`, `skill-creation`, `handoff-protocol`, `status-writing`
 
 ### Seed Patches (20)
 
@@ -106,7 +103,7 @@ Seeds are reusable thinking patterns drawn from across the Dojo ecosystem.
 | `mode_based_complexity_gating` | Route to local or cloud models based on mode complexity. |
 | `shared_infrastructure` | Build once, reuse everywhere -- central implementations. |
 
-**AROMA (Rest & Collaboration)**
+**AROMA & Serenity Valley**
 | Seed | Description |
 |------|-------------|
 | `sanctuary_architecture` | Design digital spaces for being, not just doing. |
@@ -117,47 +114,27 @@ Seeds are reusable thinking patterns drawn from across the Dojo ecosystem.
 | `the_onsen_pattern` | Rest as critical practice for sustainable performance. |
 | `collaborative_calibration` | Norms for peer-to-peer learning and explicit teaching. |
 | `transparent_intelligence` | Reveal internal state, admit uncertainty, make learning visible. |
-
-**Serenity Valley (Healing & Being)**
-| Seed | Description |
-|------|-------------|
 | `inter_acceptance` | Accept yourself through the compassionate eyes of another. |
 | `radical_freedom` | Agency and the power to choose your response within constraints. |
 
-### Skills (32)
+### Resources
 
-Skills are complete workflows and protocols organized by category.
+Documentation resources accessible via MCP resource URIs:
 
-**Learning:** `agent-to-agent-teaching`, `patient-learning-protocol`
+- `dojo://resources/{name}` -- 8 documentation resources (AROMA philosophy, EIT principles, etc.)
+- `dojo://seeds/{name}` -- 20 seed patches
+- `dojo://skills/{plugin}/{name}` -- All loaded skills
 
-**Strategy:** `strategic-scout`, `iterative-scouting-pattern`, `product-positioning-scout`, `multi-surface-product-strategy`, `era-architecture`
+---
 
-**Process:** `pre-implementation-checklist`, `write-frontend-spec-from-backend`, `research-modes`, `debugging-troubleshooting`, `project-exploration`, `web-research`, `status-writer`, `spec-constellation-to-prompt-suite`
+## Configuration
 
-**Workflow:** `strategic-to-tactical-workflow`, `transform-spec-to-implementation-prompt`, `parallel-tracks-pattern`, `agent-handoff-protocol`, `agent-workspace-navigator`, `decision-propagation-protocol`
+| Env Var | Default | Description |
+|---------|---------|-------------|
+| `DOJO_SKILLS_PATH` | (bundled fallback) | Path to CoworkPlugins root directory containing `plugins/` |
+| `DOJO_ADR_PATH` | `./decisions` | Directory where `dojo.log_decision` writes ADR files |
 
-**Meta:** `skill-creator`, `skill-maintenance-ritual`, `process-to-skill-workflow`, `seed-to-skill-converter`
-
-**Reflection:** `seed-reflector`, `retrospective`
-
-**Memory:** `memory-garden-writer`, `context-compression-ritual`
-
-**Development:** `repo-context-sync`, `write-release-specification`, `health-supervisor`
-
-### Resources (8)
-
-Documentation resources accessible via MCP resource URIs (`dojo://`):
-
-| Resource | Description |
-|----------|-------------|
-| `dojo://aroma_philosophy` | The complete AROMA philosophy: a sanctuary for being. |
-| `dojo://eit_principles` | Core principles of Emotional Interbeing Therapy. |
-| `dojo://collaboration_norms` | The five collaboration norms from AROMA. |
-| `dojo://sanctuary_design` | Principles for calm, inviting, and sacred digital spaces. |
-| `dojo://wisdom_synthesis` | Complete synthesis of Dojo wisdom, philosophy, and patterns. |
-| `dojo://agent_protocol` | The Dojo Agent Protocol v1.0: governance and operational framework. |
-| `dojo://four_modes` | The four Dojo modes: Mirror, Scout, Gardener, Implementation. |
-| `dojo://planning_with_files` | Planning-with-files pattern for persistent agent memory. |
+The server works out of the box with zero configuration (bundled skills, default ADR path).
 
 ---
 
@@ -187,30 +164,30 @@ docker build -t dojo-mcp-server .
 
 # Run via stdio (for MCP hosts)
 docker run -i --rm dojo-mcp-server
+
+# Run with skills path mounted
+docker run -i --rm -v /path/to/CoworkPlugins:/skills -e DOJO_SKILLS_PATH=/skills dojo-mcp-server
 ```
-
-The multi-stage Dockerfile produces a minimal Alpine-based image (~15 MB).
-
-## Configuration
-
-The server runs over **stdio** and requires no configuration files. All wisdom (seeds, skills, resources, principles) is embedded in the binary.
-
-Environment variables:
-- None required. The server is fully self-contained.
 
 ## Project Structure
 
 ```
 mcp-server/
-  cmd/server/main.go           Server entry point
+  cmd/server/main.go           Server entry point, env vars
   internal/
     dojo/
-      handler.go                Core MCP tool handlers
-      new_handlers.go           Thinking room, lineage, EIT tools
+      handler.go                7 MCP tool handlers
+      scaffolds.go              Scout and reflect methodology templates
+    skills/
+      loader.go                 Filesystem SKILL.md loader
+      search.go                 Keyword + trigger search
+      bundled.go                go:embed fallback (15 key skills)
+      bundled/                  Embedded SKILL.md files
+    decisions/
+      writer.go                 ADR file writer
     wisdom/
       base.go                   Wisdom base, search, helpers
       seeds.go                  20 seed patches
-      skills.go                 32 skills
       resources.go              8 documentation resources
   Dockerfile                    Multi-stage container build
   .github/workflows/ci.yml     CI pipeline
@@ -225,11 +202,6 @@ Dojo Genesis is built on three core principles:
 2. **Self-Definition** -- Help users see their own thinking, not impose external frameworks.
 3. **Understanding is Love** -- Deep, non-judgmental understanding is the highest service.
 
-The server integrates wisdom from three interconnected sanctuaries:
-- **Dojo Genesis** (the practice hall) -- for building with courage and precision.
-- **AROMA** (the onsen) -- for rest, reflection, and collaboration.
-- **Serenity Valley** (the home) -- for healing and being.
-
 ## License
 
 MIT License -- see [LICENSE](LICENSE) for details.
@@ -239,8 +211,3 @@ Copyright (c) 2026 Dojo Genesis
 ## Contributing
 
 Contributions are welcome. Please see [github.com/DojoGenesis](https://github.com/DojoGenesis) for organization-level guidelines.
-
-When contributing, ensure your changes:
-- Align with the Dojo philosophy
-- Include tests
-- Follow proper attribution and lineage

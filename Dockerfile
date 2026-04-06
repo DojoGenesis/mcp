@@ -20,12 +20,18 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /app
 
+# Create default decisions directory
+RUN mkdir -p /app/decisions
+
 # Copy the binary from builder
 COPY --from=builder /build/server .
 
 # Run as non-root user
 RUN adduser -D -u 1000 dojo
 USER dojo
+
+# Default env vars
+ENV DOJO_ADR_PATH=/app/decisions
 
 # Run the server
 ENTRYPOINT ["./server"]

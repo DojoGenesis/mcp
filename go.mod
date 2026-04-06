@@ -2,7 +2,10 @@ module github.com/DojoGenesis/mcp-server
 
 go 1.23.2
 
-require github.com/mark3labs/mcp-go v0.47.0
+require (
+	github.com/mark3labs/mcp-go v0.47.0
+	gopkg.in/yaml.v3 v3.0.1
+)
 
 require (
 	github.com/google/jsonschema-go v0.4.2 // indirect

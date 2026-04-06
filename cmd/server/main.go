@@ -2,33 +2,36 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/DojoGenesis/mcp-server/internal/dojo"
 	"github.com/mark3labs/mcp-go/server"
 )
 
+const version = "3.0.0"
+
 func main() {
-	// Create MCP server
+	skillsPath := os.Getenv("DOJO_SKILLS_PATH")
+	adrPath := os.Getenv("DOJO_ADR_PATH")
+
 	s := server.NewMCPServer(
 		"dojo-mcp-server",
-		"2.1.0",
-		server.WithResourceCapabilities(false, false),
+		version,
+		server.WithResourceCapabilities(true, false),
 		server.WithPromptCapabilities(false),
 	)
 
-	// Initialize Dojo handler
-	dojoHandler := dojo.NewHandler()
+	handler, err := dojo.NewHandler(skillsPath, adrPath)
+	if err != nil {
+		log.Fatalf("Failed to initialize handler: %v", err)
+	}
 
-	// Register tools
-	dojoHandler.RegisterTools(s)
+	handler.RegisterTools(s)
+	handler.RegisterResources(s)
 
-	// Register prompts
-	dojoHandler.RegisterPrompts(s)
+	log.Printf("dojo-mcp-server v%s starting (skills: %s, adr: %s)",
+		version, skillsPath, adrPath)
 
-	// Register resources
-	dojoHandler.RegisterResources(s)
-
-	// Start server with stdio transport
 	if err := server.ServeStdio(s); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
