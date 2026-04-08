@@ -1,236 +1,223 @@
 ---
 name: skill-creation
-description: Guide for creating modular, reusable skills with proper structure and progressive disclosure. Use when formalizing workflows or building capability packages. Trigger phrases: "create a new skill", "write a skill", "build a skill for this workflow", "turn this into a skill", "upgrade this to a skill".
-license: Complete terms in LICENSE.txt
+version: "1.1"
+description: >
+  Guide for creating effective, reusable skills that extend agent capabilities
+  with specialized knowledge and workflows. Use when creating a new skill from
+  scratch, updating an existing skill, designing skill architecture, or when a
+  user says "make a skill for X." Also use when formalizing a workflow, capturing
+  domain knowledge, or building institutional memory.
 ---
 
-# Skill Creator
+# Skill Creation
 
-This skill provides guidance for creating effective skills.
+## I. Philosophy: Skills Encode Thinking, Not Tool Usage
 
-## About Skills
+A skill is not a script. It is not a checklist. It is a *pattern of thinking* -- a way of approaching a class of problems that any competent agent can execute, regardless of what tools are available.
 
-Skills are modular, self-contained packages that extend Manus's capabilities by providing specialized knowledge, workflows, and tools. Think of them as "onboarding guides" for specific domains or tasks—they transform Manus from a general-purpose agent into a specialized agent equipped with procedural knowledge that no model can fully possess.
+The agent is already smart. It can write code, parse files, search the web, and reason about complex problems. What it lacks is *your* domain knowledge: the institutional conventions, the hard-won patterns, the "we tried X and it failed because of Y" lessons that took months to learn.
 
-### What Skills Provide
-
-1. Specialized workflows - Multi-step procedures for specific domains
-2. Tool integrations - Instructions for working with specific file formats or APIs
-3. Domain expertise - Company-specific knowledge, schemas, business logic
-4. Bundled resources - Scripts, references, and assets for complex and repetitive tasks
-
-## Core Principles
-
-### Concise is Key
-
-The context window is a public good. Skills share the context window with everything else Manus needs: system prompt, conversation history, other Skills' metadata, and the actual user request.
-
-**Default assumption: Manus is already very smart.** Only add context Manus doesn't already have. Challenge each piece of information: "Does Manus really need this explanation?" and "Does this paragraph justify its token cost?"
-
-Prefer concise examples over verbose explanations.
-
-### Set Appropriate Degrees of Freedom
-
-Match the level of specificity to the task's fragility and variability:
-
-**High freedom (text-based instructions)**: Use when multiple approaches are valid, decisions depend on context, or heuristics guide the approach.
-
-**Medium freedom (pseudocode or scripts with parameters)**: Use when a preferred pattern exists, some variation is acceptable, or configuration affects behavior.
-
-**Low freedom (specific scripts, few parameters)**: Use when operations are fragile and error-prone, consistency is critical, or a specific sequence must be followed.
-
-Think of Manus as exploring a path: a narrow bridge with cliffs needs specific guardrails (low freedom), while an open field allows many routes (high freedom).
-
-### Anatomy of a Skill
-
-Every skill consists of a required SKILL.md file and optional bundled resources:
-
-```
-skill-name/
-├── SKILL.md (required)
-│   ├── YAML frontmatter metadata (required)
-│   │   ├── name: (required)
-│   │   └── description: (required)
-│   └── Markdown instructions (required)
-└── Bundled Resources (optional)
-    ├── scripts/          - Executable code (Python/Bash/etc.)
-    ├── references/       - Documentation intended to be loaded into context as needed
-    └── templates/        - Files used in output (templates, icons, fonts, etc.)
-```
-
-#### SKILL.md (required)
-
-Every SKILL.md consists of:
-
-- **Frontmatter** (YAML): Contains `name` and `description` fields. These are the only fields that Manus reads to determine when the skill gets used, thus it is very important to be clear and comprehensive in describing what the skill is, and when it should be used.
-- **Body** (Markdown): Instructions and guidance for using the skill. Only loaded AFTER the skill triggers (if at all).
-
-#### Bundled Resources (optional)
-
-- **`scripts/`** - Executable code for repetitive or deterministic tasks (e.g., `rotate_pdf.py`). Token efficient, can run without loading into context.
-- **`references/`** - Documentation loaded as needed (schemas, API docs, policies). Keeps SKILL.md lean. For large files (>10k words), include grep patterns in SKILL.md.
-- **`templates/`** - Output assets not loaded into context (logos, fonts, boilerplate code).
-
-**Avoid duplication**: Information lives in SKILL.md OR references, not both.
-
-**Do NOT include**: README.md, CHANGELOG.md, or other auxiliary documentation. Skills are for AI agents, not users.
+A good skill provides exactly this: the knowledge gap between general intelligence and domain expertise. Nothing more. The context window is a shared resource -- every token in a skill must justify its cost.
 
 ### Progressive Disclosure
 
-Three-level loading system:
-1. **Metadata** - Always in context (~100 words)
-2. **SKILL.md body** - When skill triggers (<500 lines)
-3. **Bundled resources** - As needed
+Skills load in three tiers:
 
-Keep SKILL.md under 500 lines. When splitting content to references, clearly describe when to read them.
+1. **Metadata** (~100 words) -- Always in context. The YAML `description` field determines whether the skill activates.
+2. **SKILL.md body** (<500 lines) -- Loaded when the skill triggers. Contains the core workflow.
+3. **Bundled resources** -- Loaded on demand. Templates, references, scripts, examples.
 
-**Key principle:** Keep core workflow in SKILL.md; move variant-specific details to reference files.
+This architecture means: **the description field is the most important part of the skill.** If the description doesn't capture when to use the skill, the body never loads.
 
-Example structure for multi-domain skills:
+## II. When to Use This Skill
 
-```
-bigquery-skill/
-├── SKILL.md (overview + navigation)
-└── references/
-    ├── finance.md
-    ├── sales.md
-    └── product.md
-```
+- **Creating a new skill from scratch** for a domain, tool, or workflow
+- **Updating an existing skill** that needs restructuring or enrichment
+- **Designing skill architecture** for a new skills ecosystem
+- **Formalizing a repeatable workflow** that agents should follow consistently
+- **Capturing domain expertise** that would otherwise live only in someone's head
+- **Reviewing a skill's quality** against structural standards
+- **Onboarding someone** to the skill creation process
 
-Manus only loads the relevant reference file when needed.
+**When NOT to use:** If the knowledge is a simple fact or reminder (not a process), it should be a seed, not a skill. If the knowledge is tool-specific and non-transferable, it should be documentation, not a skill.
 
-## Skill Creation Process
+## III. The Skill Creation Workflow
 
-Skill creation involves these steps:
+### Step 1: Understand the Skill
 
-1. Understand the skill with concrete examples
-2. Plan reusable skill contents (scripts, references, templates)
-3. Initialize the skill (run init_skill.py)
-4. Edit the skill (implement resources and write SKILL.md)
-5. Deliver the skill (send SKILL.md path via notify_user)
-6. Iterate based on real usage
+**Goal:** Develop a concrete understanding of what the skill provides and when it triggers.
 
-Follow these steps in order, skipping only if there is a clear reason why they are not applicable.
+**Actions:**
+1. Ask what capability the skill provides that the agent doesn't already have
+2. Identify at least 5 trigger scenarios (situations that should activate this skill)
+3. Identify inputs (what the skill starts with) and outputs (what it produces)
+4. Clarify the boundary: what is in scope vs. out of scope
 
-### Step 1: Understanding the Skill with Concrete Examples
+**Output:** Clear skill specification with triggers, inputs, outputs, and scope.
 
-Skip this step only when the skill's usage patterns are already clearly understood.
+**Key Insight:** The most common failure is creating skills that teach the agent what it already knows. Challenge every piece of content: "Does the agent really need this?"
 
-Gather concrete examples of how the skill will be used. Ask questions like:
-- "What functionality should this skill support?"
-- "Can you give examples of how it would be used?"
+### Step 2: Plan Contents
 
-Avoid asking too many questions at once. Conclude when you have a clear sense of the functionality.
+**Goal:** Determine what the skill needs beyond SKILL.md.
 
-### Step 2: Planning the Reusable Skill Contents
+**Actions:**
+1. Evaluate whether supporting files are needed:
+   - `templates/` -- For structured outputs the skill produces
+   - `references/` -- For external knowledge the skill relies on
+   - `scripts/` -- For executable, deterministic steps
+   - `examples/` -- For real-world process walkthroughs
+2. Apply the test: if the content would exceed 500 lines in SKILL.md, split it
 
-For each example, identify reusable resources:
+**Output:** Content plan listing SKILL.md sections and any supporting files.
 
-| Resource Type | When to Use                     | Example                               |
-| ------------- | ------------------------------- | ------------------------------------- |
-| `scripts/`    | Code rewritten repeatedly       | `rotate_pdf.py` for PDF rotation      |
-| `templates/`  | Same boilerplate each time      | HTML/React starter for webapp builder |
-| `references/` | Documentation needed repeatedly | Database schemas for BigQuery skill   |
+**Key Insight:** Most skills are SKILL.md-only. Only add supporting files when there's a clear need. Avoid duplication -- information lives in SKILL.md OR references, not both.
 
-### Step 3: Initializing the Skill
+### Step 3: Initialize
 
-At this point, it is time to actually create the skill.
+**Goal:** Create the skill directory with proper structure and frontmatter.
 
-Skip this step only if the skill being developed already exists, and iteration or packaging is needed. In this case, continue to the next step.
+**Actions:**
+1. Create directory: `skills/[skill-name]/`
+2. Create SKILL.md with YAML frontmatter:
+   - `name`: The skill name (verb-object pattern preferred)
+   - `description`: Comprehensive trigger description including when to use AND when not to use
+3. Create supporting directories only if planned in Step 2
 
-When creating a new skill from scratch, always run the `init_skill.py` script. The script conveniently generates a new template skill directory that automatically includes everything a skill requires, making the skill creation process much more efficient and reliable.
+**Output:** Initialized skill directory ready for content.
 
-Usage:
+**Key Insight:** The YAML `description` is the most important field. It determines whether the skill ever gets loaded. Be comprehensive: include trigger words, use cases, and anti-use-cases.
 
-```bash
-python /home/ubuntu/skills/skill-creation/scripts/init_skill.py <skill-name>
-```
+### Step 4: Write the SKILL.md Body
 
-The script:
+**Goal:** Create the core knowledge document.
 
-- Creates the skill directory at `/home/ubuntu/skills/<skill-name>/`
-- Generates a SKILL.md template with proper frontmatter and TODO placeholders
-- Creates example resource directories: `scripts/`, `references/`, and `templates/`
-- Adds example files in each directory that can be customized or deleted
+**Before writing, consult proven design patterns:**
+- **Multi-step processes:** Study existing workflow skills for sequential steps and conditional logic
+- **Output formats or quality standards:** Study existing template skills for output patterns
+- **Progressive disclosure:** Study how existing skills split content between SKILL.md and references/
 
-After initialization, customize or remove the generated SKILL.md and example files as needed.
+**Required sections:**
 
-### Step 4: Edit the Skill
+| Section | Purpose | Minimum Bar |
+|---|---|---|
+| I. Philosophy | Why this skill exists | 2-3 paragraphs explaining the principle |
+| II. When to Use | Trigger scenarios | 5+ concrete scenarios |
+| III. Workflow | Step-by-step process | 3+ steps with decision points |
+| IV. Best Practices | Actionable wisdom | Each practice explains "why" |
+| V. Quality Checklist | Verification criteria | 5+ binary yes/no items |
+| VI. Common Pitfalls | What goes wrong | 2+ problem/solution pairs |
 
-When editing the (newly-generated or existing) skill, remember that the skill is being created for another instance of Manus to use. Include information that would be beneficial and non-obvious to Manus. Consider what procedural knowledge, domain-specific details, or reusable assets would help another Manus instance execute these tasks more effectively.
+**Recommended sections:**
 
-#### Learn Proven Design Patterns
+| Section | Purpose |
+|---|---|
+| VII. Example | Concrete walkthrough on a real scenario |
+| VIII. Related Skills | Links to complementary skills |
 
-Consult these helpful guides based on your skill's needs:
+**Writing guidelines:**
+- Use imperative/infinitive form
+- Prefer concise examples over verbose explanations
+- Match specificity to fragility (narrow bridge = specific guardrails; open field = high freedom)
+- Keep SKILL.md under 500 lines
 
-- **Multi-step processes**: See `/home/ubuntu/skills/skill-creation/references/workflows.md` for sequential workflows and conditional logic
-- **Output formats or quality standards**: See `/home/ubuntu/skills/skill-creation/references/output-patterns.md` for template and example patterns
-- **Progressive Disclosure Patterns**: See `/home/ubuntu/skills/skill-creation/references/progressive-disclosure-patterns.md` for splitting content across files.
+**Output:** Complete SKILL.md body.
 
-These files contain established best practices for effective skill design.
+### Step 5: Create Supporting Files
 
-#### Start with Reusable Skill Contents
+**Goal:** Build any templates, references, scripts, or examples planned in Step 2.
 
-Begin with the `scripts/`, `references/`, and `templates/` files identified in Step 2. This may require user input (e.g., brand assets for `templates/`, documentation for `references/`).
+**Actions:**
+1. Create each supporting file
+2. Test any scripts to verify they work
+3. Ensure SKILL.md references supporting files with clear "when to read" instructions
+4. Remove any unused placeholder files
 
-Test added scripts by running them to ensure they work correctly. For many similar scripts, test a representative sample.
+**Output:** Supporting files ready for use.
 
-Delete any unused example files from initialization.
+### Step 6: Deliver and Iterate
 
-#### Update SKILL.md
+**Goal:** Present the skill and refine based on real usage.
 
-**Writing Guidelines:** Always use imperative/infinitive form.
+**Actions:**
+1. Present the completed skill to the user
+2. Ask: "Does this capture the pattern accurately? What's missing?"
+3. Highlight assumptions that should be verified
+4. Iterate based on feedback
 
-##### Frontmatter
-
-Write the YAML frontmatter with `name` and `description`:
-
-- `name`: The skill name
-- `description`: Primary trigger mechanism. Must include what the skill does AND when to use it (body only loads after triggering).
-  - Example: "Document creation and editing with tracked changes. Use for: creating .docx files, modifying content, working with tracked changes."
-
-##### Body
-
-Write instructions for using the skill and its bundled resources.
-
-### Step 5: Delivering the Skill
-
-Once development of the skill is complete, validate and deliver it to the user.
-
-#### Validate the Skill
-
-Run the validation script to ensure the skill meets all requirements:
-
-```bash
-python /home/ubuntu/skills/skill-creation/scripts/quick_validate.py <skill-name>
-```
-
-If validation fails, fix the errors and run validation again.
-
-#### Deliver to User
-
-Use `message` tool to send the SKILL.md file as attachment:
-
-```
-/home/ubuntu/skills/{skill-name}/SKILL.md
-```
-
-The system will automatically:
-
-1. Detect the path pattern `/home/ubuntu/skills/*/SKILL.md`
-2. Package the skill directory into a `.skill` file
-3. Send to frontend as a special card with options:
-   - Add to My Skills
-   - Download
-   - Preview
-
-### Step 6: Iterate
-
-After testing the skill, users may request improvements. Often this happens right after using the skill, with fresh context of how the skill performed.
-
-**Iteration workflow:**
-
+**Iteration cycle (post-delivery):**
 1. Use the skill on real tasks
-2. Notice struggles or inefficiencies
+2. Notice struggles or inefficiencies during execution
 3. Identify how SKILL.md or bundled resources should be updated
 4. Implement changes and test again
+
+**Output:** Finalized skill approved by the user, with iteration plan for post-usage refinement.
+
+**Key Insight:** The first version is rarely perfect. Real usage reveals gaps that planning cannot. The most valuable feedback comes right after using a skill, with fresh context of how it performed.
+
+## IV. Best Practices
+
+### Write Descriptions Like Headlines
+
+The YAML `description` field is the skill's advertisement. It must communicate in ~50 words what the skill does and when to use it. Include trigger keywords generously.
+
+### Match Freedom to Fragility
+
+High-freedom instructions ("choose an appropriate approach") work when multiple approaches are valid. Low-freedom instructions ("follow these exact steps") work when operations are fragile. Most skills need a mix.
+
+### Keep the Context Window Clean
+
+Every line in SKILL.md costs tokens. Challenge each paragraph: "Does this justify its token cost?" Move variant-specific details to reference files. Keep the core workflow in SKILL.md.
+
+### Name with Verb-Object Convention
+
+Good: `write-release-specification`, `audit-skill-ecosystem`, `transform-spec-to-prompt`
+Bad: `spec-writer`, `audit`, `prompt-tool`
+
+Verb-object names are self-documenting. They tell you what the skill *does*, not what it *is*.
+
+## V. Quality Checklist
+
+- [ ] YAML frontmatter has `name` and `description` fields
+- [ ] Description includes 3+ trigger keywords or phrases
+- [ ] Philosophy section explains "why," not just "what"
+- [ ] When to Use lists 5+ concrete trigger scenarios
+- [ ] Workflow has 3+ numbered steps with goals and outputs
+- [ ] Each workflow step has a clear decision point or output
+- [ ] Quality checklist has 5+ binary items
+- [ ] At least 2 common pitfalls with problem/solution pairs
+- [ ] SKILL.md is under 500 lines
+- [ ] No references to specific agents or proprietary tools
+- [ ] Skill name follows verb-object or descriptive compound convention
+
+## VI. Common Pitfalls
+
+### Teaching the Agent What It Already Knows
+
+**Problem:** Filling skills with instructions the agent can infer (e.g., "write clean code," "handle errors gracefully"). This wastes context tokens.
+
+**Solution:** Before adding content, ask: "Would the agent do this wrong without this instruction?" If no, remove it.
+
+### Vague Trigger Descriptions
+
+**Problem:** Description says "Use for skill-related tasks" -- too broad to trigger correctly.
+
+**Solution:** Include specific trigger scenarios in the description: "Use when creating a new skill, updating an existing skill, or reviewing skill quality."
+
+### Monolithic Skills
+
+**Problem:** A single SKILL.md trying to cover too much ground, exceeding 500 lines.
+
+**Solution:** Split into core workflow (SKILL.md) and variant details (references/). The reader should find the main path in SKILL.md and branch to references only when needed.
+
+### Missing Decision Points
+
+**Problem:** Workflow steps that are purely sequential with no branching. Real processes have decision points.
+
+**Solution:** At each step, ask: "What could go differently here?" Add conditional guidance for the common branches.
+
+### Skills That Are Really Documentation
+
+**Problem:** A "skill" that describes a tool's API rather than encoding a pattern of thinking.
+
+**Solution:** Skills describe *patterns*, not *tools*. If the content would become obsolete when the tool changes, it's documentation. If the reasoning would survive a tool change, it's a skill.

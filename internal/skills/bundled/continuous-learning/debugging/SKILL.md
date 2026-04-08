@@ -1,100 +1,50 @@
 ---
-name: debugging
-description: Systematically debug code, systems, and workflows through hypothesis testing and root cause analysis. Use when something breaks, behaves unexpectedly, needs diagnosis, or for performance issues. Trigger phrases: 'debug this error', 'why is this failing', 'investigate the issue', 'find the root cause', 'fix this bug systematically'.
+name: debugging-troubleshooting
+description: Systematic debugging and troubleshooting for code, systems, and workflows. Follows a 7-step methodology — reproduce, isolate, hypothesize, test, fix, verify, learn. Intuition is useful but methodology prevents rabbit holes.
 ---
 
-# Debugging & Troubleshooting Skills
+# Debugging & Troubleshooting Skill
 
-**Version:** 1.0
-**Created:** 2026-02-02
-**Author:** Cipher 🧭
-**Purpose:** Systematic debugging and troubleshooting for code, systems, and workflows
-
----
-
-## Overview
-
-This skill encodes best practices for **debugging and troubleshooting**—isolating problems, identifying root causes, and implementing fixes methodically. It provides patterns for reading logs, reproducing issues, testing hypotheses, and verifying solutions.
-
-**Philosophy:** Debugging is systematic investigation, not random guessing. One change at a time, test, observe, learn.
+**Version:** 1.2
+**Author:** Tres Pies Design
+**Purpose:** Systematic debugging and troubleshooting that finds root causes, not just patches symptoms.
 
 ---
 
-## When to Use This Skill
+## I. Philosophy: Systematic Diagnosis
+
+Debugging is systematic investigation, not random guessing. One change at a time, test, observe, learn. Intuition is useful but methodology prevents rabbit holes.
+
+**Core principle:** You can't fix what you can't reproduce.
+
+---
+
+## II. When to Use This Skill
 
 - Code behaves unexpectedly (errors, crashes, wrong output)
 - Performance degradation (slow queries, long build times)
-- Data inconsistency (database state out of sync)
+- Data inconsistency (state out of sync)
 - Integration failure (API returns errors, sync breaks)
 - Feature not working as expected (UI bug, logic error)
 
 ---
 
-## Core Principles
+## III. The 7-Step Debugging Workflow
 
-### 1. Debugging is Systematic, Not Random
+Always follow these steps in order. Never jump to fixing without reproducing.
 
-**Don't:**
-- Change 5 things at once
-- Guess the cause without evidence
-- Apply fixes blindly
-- Skip testing after fixing
+### Step 1: Reproduce
 
-**Do:**
-- Formulate hypothesis ("X causes Y")
-- Test hypothesis (verify it causes problem)
-- Fix based on confirmed cause
-- Re-test to verify fix works
+Can the user reproduce the problem consistently?
 
-### 2. Observe, Don't Assume
+- Identify exact steps to trigger the issue
+- Run reproduction 3+ times
+- Note if it happens every time or intermittently
+- If intermittent, identify patterns (time of day, data size, user count, load)
 
-**Observe:**
-- Error messages (exact text, stack traces)
-- Logs (timestamps, context, sequence)
-- System state (what changed, what's running)
-- User behavior (what they did, what they expected)
+**If you can't reproduce it, you can't fix it.** Invest time here.
 
-**Don't assume:**
-- "It's probably a caching issue"
-- "The user must have done X wrong"
-- "This library is broken" (without evidence)
-
-### 3. Isolate Variables
-
-**When you have multiple factors, test them independently:**
-
-| Factors | Test Each | Result |
-|----------|-----------|--------|
-| Database query | ✅ Works | ❌ Timeout (4s) |
-| Network request | ✅ Works | ❌ Works |
-| Frontend render | ✅ Works | ❌ Works |
-
-**Conclusion:** Database query is bottleneck (4s timeout). Optimize query or increase timeout.
-
-### 4. Reproduce Consistently
-
-**Before debugging:**
-1. Identify exact steps to reproduce
-2. Run reproduction 3+ times
-3. Note if it happens every time or intermittently
-4. If intermittent, identify patterns (time of day, data size, user count)
-
-**Why:** You can't fix what you can't reproduce.
-
----
-
-## Debugging Workflow
-
-### Step 1: Gather Information (5-10 minutes)
-
-**Collect:**
-- **Error messages:** Exact text, stack traces, error codes
-- **Logs:** Application logs, database logs, browser console
-- **Context:** What happened before error? What changed recently?
-- **Expected vs. actual:** What should happen? What actually happened?
-- **Environment:** OS, Node version, dependencies, database version
-
-**Template:**
+**Information Gathering Template:**
 
 ```markdown
 ## Debug: [Issue Title]
@@ -125,111 +75,102 @@ This skill encodes best practices for **debugging and troubleshooting**—isolat
 [What actually happened]
 ```
 
-### Step 2: Formulate Hypothesis (2-5 minutes)
+### Step 2: Isolate
 
-**Ask:**
-- What could cause this error?
-- What's the most likely cause? (start simple)
-- What evidence supports this hypothesis?
+Narrow the scope. Which component, file, function, or line?
 
-**Examples:**
-- Hypothesis: "Database query timeout is caused by missing index"
-- Hypothesis: "404 error is caused by wrong file path in env var"
-- Hypothesis: "Sync fails because file encoding is wrong"
+**Bisection strategy:** When many variables exist, use binary search to narrow down:
 
-**Prioritize:**
-1. Most likely cause (70% confidence)
-2. Second most likely (30% confidence)
-3. Edge cases (10% confidence)
+1. Split the system in half
+2. Test each half independently
+3. The half that fails contains the bug
+4. Repeat until you've isolated the specific component
 
-### Step 3: Test Hypothesis (5-15 minutes)
+**Variable isolation table:**
 
-**For each hypothesis:**
+| Factor | Tested? | Result | Notes |
+|--------|---------|--------|-------|
+| [Component 1] | Yes/No | Pass/Fail | [Details] |
+| [Component 2] | Yes/No | Pass/Fail | [Details] |
 
-**Test 1: Verify hypothesis directly**
-- Add logging to confirm cause
-- Run minimal reproduction case
-- Observe result
+**Git bisect** for regression bugs:
+```bash
+git bisect start
+git bisect bad          # current (broken) commit
+git bisect good <hash>  # last known working commit
+# Git tests commits between, finds exact breaking change
+```
 
-**Test 2: Isolate variables**
-- Remove dependencies (does it still happen?)
-- Simplify data (does it happen with 1 record?)
-- Change environment (dev vs. prod)
+### Step 3: Hypothesize
 
-**Test 3: Confirm fix**
-- Apply targeted fix
-- Re-run reproduction steps
-- Verify issue is resolved
+Generate 3-5 possible causes ranked by likelihood:
+
+| # | Hypothesis | Likelihood | Evidence For | Evidence Against |
+|---|-----------|-----------|-------------|-----------------|
+| 1 | [Most likely cause] | 70% | [What supports this] | [What contradicts] |
+| 2 | [Second cause] | 20% | [What supports this] | [What contradicts] |
+| 3 | [Edge case] | 10% | [What supports this] | [What contradicts] |
+
+For each hypothesis: what evidence would **confirm** or **reject** it?
+
+### Step 4: Test
+
+For the most likely hypothesis, design a targeted test:
+
+1. **Verify directly** — Add logging to confirm the cause
+2. **Isolate variables** — Remove dependencies, simplify data, change environment
+3. **Confirm causation** — Apply targeted fix, observe if problem resolves
 
 **Document results:**
-```
-Hypothesis: [Description]
-
-**Test Method:**
-[How tested]
-
-**Result:**
-✅ Confirmed / ❌ Rejected
-
-**Evidence:**
-[What proved/disproved hypothesis]
-```
-
-### Step 4: Implement Fix (Variable time)
-
-**If hypothesis confirmed:**
-- Implement minimal fix (don't refactor everything)
-- Add error handling or validation
-- Add monitoring or logging to catch future instances
-
-**If hypothesis rejected:**
-- Move to next hypothesis
-- Re-gather information (may have missed something)
-- Consider broader causes (systemic issue, not local)
-
-### Step 5: Verify & Document (5-10 minutes)
-
-**Verify:**
-- Original reproduction steps no longer fail
-- Edge cases also work
-- No regressions introduced (other features still work)
-
-**Document:**
 ```markdown
-## Fix: [Issue Title]
-
-**Root Cause:**
-[What actually caused issue]
-
-**Solution:**
-[What was fixed]
-
-**Code Changes:**
-[File, function, or module changed]
-
-**Testing:**
-- Original issue: ✅ Resolved
-- Edge case 1: ✅ Tested
-- Edge case 2: ✅ Tested
-- Regression check: ✅ No regressions
-
-**Lessons Learned:**
-[What to do differently in future]
+Hypothesis: [Description]
+Test Method: [How tested]
+Result: Confirmed / Rejected
+Evidence: [What proved/disproved it]
 ```
+
+If rejected, move to next hypothesis. If all rejected, re-gather information.
+
+### Step 5: Fix
+
+Once cause is confirmed:
+
+- Implement **minimal fix** (don't refactor everything)
+- Add error handling or validation where appropriate
+- Add monitoring or logging to catch future instances
+- If the fix is risky, define a **rollback plan**
+
+If **~~repository** is connected, suggest specific code changes.
+
+### Step 6: Verify
+
+Confirm the fix works without side effects:
+
+- [ ] Original reproduction steps no longer fail
+- [ ] Edge cases also work
+- [ ] No regressions introduced (other features still work)
+- [ ] Fix addresses root cause, not just symptom
+
+### Step 7: Learn
+
+Ask: **Is this a pattern that could recur?**
+
+- If yes, offer to `/plant` a seed (wisdom-garden cross-reference)
+- Document what happened for future reference
+- Identify systemic improvements that would prevent similar bugs
 
 ---
 
-## Common Debugging Patterns
+## IV. Best Practices
 
-### Pattern 1: Read Logs Strategically
+### Read Logs Strategically
 
-**Don't:** Read entire log file into context
-**Do:**
+Don't read entire log files into context. Instead:
 - Search for error codes or keywords
-- Extract log lines around error timestamp (±5 minutes)
-- Look for patterns (same error recurring)
+- Extract log lines around error timestamp (plus/minus 5 minutes)
+- Look for recurring patterns
 
-**Search commands:**
+**Useful search commands:**
 ```bash
 # Search for specific error
 grep -i "error" app.log | tail -20
@@ -241,59 +182,49 @@ grep "2026-02-02T14:00" app.log -A 5 -B 5
 grep -A 10 "Error:" app.log
 ```
 
-### Pattern 2: Use Logging to Verify
+### Use Logging to Verify
 
-**Add logs at critical points:**
+When in doubt, add a log. You can always remove later. Add logs at critical points:
 
 | Point | Log What | Why |
-|--------|-----------|-----|
-| Before database query | Query string, parameters | See what's being executed |
+|-------|---------|-----|
+| Before database query | Query string, parameters | See what's executed |
 | After database query | Rows returned, time taken | Performance check |
 | Before API call | Request payload | Verify what's sent |
 | After API call | Response status, body | Verify what's received |
 | Before file write | File path, content | Verify what's written |
 
-**When in doubt, add a log. You can always remove later.**
+### Binary Search for Root Cause
 
-### Pattern 3: Binary Search for Root Cause
+When many variables exist, narrow down systematically instead of testing everything.
 
-**When many variables, narrow down:**
-
+**Example:**
 ```
-Example: Database query slow (4s)
-
-Variables:
-- Database connection ✅
-- Query complexity ✅
-- Table size (100K rows) ✅
-- Missing index ❓
-- Lock contention ❓
+Database query slow (4s)
 
 Test 1: Run query with 10 rows
-Result: 0.1s (fast) → Table size not cause
+Result: 0.1s (fast) -> Table size not cause
 
 Test 2: Run EXPLAIN on query
-Result: "seq scan" → Missing index confirmed
+Result: "seq scan" -> Missing index confirmed
 
-Hypothesis: Missing index causes full table scan
 Fix: Add index on queried columns
-Result: 0.05s → Confirmed
+Result: 0.05s -> Confirmed
 ```
 
-### Pattern 4: Reproduce in Isolated Environment
+### Reproduce in Isolated Environment
 
-**When issue only happens in production:**
+When an issue only happens in production:
 - Create minimal reproduction in dev
 - Simplify data (use synthetic data)
 - Remove external dependencies (mock APIs)
-- Test against same environment versions
+- Match environment versions
 
-**Goal:** Isolate whether issue is data, code, or environment.
+**Goal:** Isolate whether the issue is data, code, or environment.
 
-### Pattern 5: Use Version Control for Time Travel
+### Version Control Time Travel
 
-**When something breaks after changes:**
-
+Use git history to find when something broke:
 ```bash
 # What changed recently?
 git log --oneline -10
@@ -302,200 +233,168 @@ git log --oneline -10
 git log --oneline --since="2026-02-02T13:00"
 
 # Bisect to find breaking commit
-git bisect start HEAD git bisect bad
+git bisect start
+git bisect bad
 git bisect good <last-working-commit>
-# Git will test commits between, find exact one that broke it
 ```
 
 ---
 
-## Troubleshooting Categories
+## V. Quality Checklist
 
-### 1. Code Errors (Runtime, Compile, Type)
-
-**Common causes:**
-- Null/undefined access
-- Async timing issues
-- Type mismatches
-- Module not found
-
-**Approach:**
-- Read error message carefully
-- Check stack trace for file/line
-- Search error code online
-- Isolate the function causing error
-
-### 2. Performance Issues
-
-**Common causes:**
-- N+1 queries (database missing index)
-- Slow renders (unnecessary re-renders)
-- Memory leaks (unclosed connections, retained references)
-- Network latency (unoptimized requests, distant servers)
-
-**Approach:**
-- Profile the slow operation
-- Identify bottleneck (database, CPU, I/O, network)
-- Optimize the bottleneck, not everything
-- Measure before/after to verify improvement
-
-### 3. Data Inconsistency
-
-**Common causes:**
-- Database out of sync with files
-- Cache invalidation issues
-- Race conditions (concurrent writes)
-- Migration not applied
-
-**Approach:**
-- Compare database state vs. expected state
-- Check last sync timestamp
-- Verify data integrity (constraints, foreign keys)
-- Re-run sync or migration if needed
-
-### 4. Integration Failures
-
-**Common causes:**
-- API contract mismatch (expected vs. actual)
-- Authentication/authorization failures
-- Network connectivity
-- Service downtime
-
-**Approach:**
-- Verify request format matches API docs
-- Check credentials and permissions
-- Test API directly (curl or Postman)
-- Check service status page
-
-### 5. Environment-Specific Issues
-
-**Common causes:**
-- Environment variables missing or wrong
-- Path differences (Windows vs. Mac vs. Linux)
-- Dependency version conflicts
-- File permissions
-
-**Approach:**
-- Compare working vs. broken environment
-- Check environment variables
-- Verify dependencies match versions
-- Check file permissions and paths
+- [ ] Follows 7-step methodology in order — never jumps to fixing without reproducing
+- [ ] Hypotheses ranked by likelihood with evidence
+- [ ] Always ends with a learning step (is this a pattern that could recur?)
+- [ ] Debug report includes prevention seed
+- [ ] Uses bisection strategy for isolation when cause is unclear
+- [ ] Minimal fix applied — no scope creep into refactoring
 
 ---
 
-## Quality Checklist
+## VI. Example: rAF Batching Fix for SSE Reactive Hang (March 2026)
 
-Before considering debugging complete, verify:
+**The Problem:** The Dojo Gateway's SvelteKit dashboard froze when receiving Server-Sent Events (SSE) with skill execution traces. The UI became unresponsive during long-running skill executions.
 
-### Understanding
-- [ ] Root cause identified (not just symptom fixed)
-- [ ] Hypothesis tested with evidence
-- [ ] Fix is minimal (don't over-engineer)
+**The Process:**
+
+1. **Reproduce:** Triggered a skill execution with 50+ trace spans. Dashboard froze consistently after ~20 spans. Intermittent with fewer spans.
+2. **Isolate:** Used bisection — disabled SSE processing (UI worked), disabled store updates (UI worked), re-enabled both (freeze). Isolated to: Svelte store updates triggered per SSE chunk.
+3. **Hypothesize:** (1) Svelte reactivity triggering full re-render per store update (70%), (2) SSE backpressure overwhelming EventSource (20%), (3) Memory leak in trace accumulation (10%).
+4. **Test:** Added `console.time` around store updates. Confirmed: each SSE chunk triggered a synchronous Svelte re-render. 50 chunks = 50 synchronous re-renders in rapid succession.
+5. **Fix:** Implemented `requestAnimationFrame` batching — accumulate store updates and flush at frame rate (16ms intervals) instead of per-chunk.
+6. **Verify:** Tested with 200+ spans. Dashboard remained responsive. No regressions in other SSE consumers.
+7. **Learn:** Extracted seed: "rAF Batching for SSE" — any reactive framework (Svelte, React, Vue) will hang if you update stores per SSE chunk. Batch at frame rate.
+
+**The Outcome:** Dashboard stayed responsive under 10x the original load. The seed was applied preventatively to 2 other SSE consumers in the codebase.
+
+**Key Insight:** The hypothesis table was critical. Without it, we would have chased SSE backpressure (hypothesis 2) first, which would have been a rabbit hole.
+
+---
+
+## VII. Common Pitfalls
+
+### Pitfall 1: Shotgun Debugging
+
+**Problem:** Changing everything at once makes it impossible to know which change fixed the issue (or introduced new ones).
+
+**Solution:** One change at a time, test, observe. The 7-step methodology enforces this discipline.
+
+### Pitfall 2: Ignoring Error Messages
+
+**Problem:** Assuming "probably network" or "probably a library bug" without reading the exact error message and stack trace.
+
+**Solution:** Read the exact error. Search for it. Stack traces tell you exactly where the problem is.
+
+### Pitfall 3: Fixing Without Verifying
+
+**Problem:** Assuming the change works without re-running the reproduction steps.
+
+**Solution:** Step 6 (Verify) is mandatory. Run the original reproduction steps after every fix.
+
+### Pitfall 4: Assuming Environment Parity
+
+**Problem:** "Works on my machine" — the dev environment doesn't match production.
+
+**Solution:** Compare environment variables, dependency versions, OS, and configuration between working and broken environments.
+
+### Pitfall 5: Refactoring During Debugging
+
+**Problem:** Discovering messy code during debugging and starting a refactor instead of fixing the bug.
+
+**Solution:** Step 5 says "minimal fix." File a separate ticket for the refactor. Debugging and refactoring are different activities with different goals.
+
+---
+
+## VIII. Related Skills
+
+- **`seed-extraction`** — Step 7 (Learn) feeds into seed extraction when a bug reveals a reusable pattern
+- **`health-audit`** — Proactive health audits can catch bug-prone code before debugging is needed
+- **`research-modes`** — Deep research mode for investigating unfamiliar error conditions or library behaviors
+- **`status-writing`** — Document ongoing debugging investigations in the project status
+- **`retrospective`** — Significant bugs should be reviewed in retrospectives for systemic improvements
+
+---
+
+## IX. Troubleshooting Categories Reference
+
+### Code Errors
+**Common causes:** Null/undefined access, async timing, type mismatches, module not found
+**Approach:** Read error message carefully, check stack trace, search error code, isolate function
+
+### Performance Issues
+**Common causes:** N+1 queries, unnecessary re-renders, memory leaks, network latency
+**Approach:** Profile the slow operation, identify bottleneck, optimize specifically, measure before/after
+
+### Data Inconsistency
+**Common causes:** Database out of sync, cache invalidation, race conditions, unapplied migration
+**Approach:** Compare expected vs actual state, check sync timestamps, verify data integrity
+
+### Integration Failures
+**Common causes:** API contract mismatch, auth failures, network connectivity, service downtime
+**Approach:** Verify request format, check credentials, test API directly, check service status
+
+### Environment-Specific Issues
+**Common causes:** Missing env vars, path differences, dependency version conflicts, file permissions
+**Approach:** Compare working vs broken environment, check env vars, verify dependency versions
+
+---
+
+## X. Output Format: Debug Report
+
+```markdown
+## Debug Report: [Issue Title]
+
+**Date:** [Date]
+**Reported By:** [Name]
+
+### Symptom
+
+[What was observed — exact error message, unexpected behavior]
+
+### Reproduction Steps
+
+1. [Step 1]
+2. [Step 2]
+Expected: [What should happen]
+Actual: [What actually happens]
+
+### Hypotheses Tested
+
+| # | Hypothesis | Result | Evidence |
+|---|-----------|--------|----------|
+| 1 | [Hypothesis] | Confirmed/Rejected | [Evidence] |
+| 2 | [Hypothesis] | Confirmed/Rejected | [Evidence] |
+
+### Root Cause
+
+[What actually caused the issue and why]
+
+### Fix Applied
+
+[What was changed to resolve it]
 
 ### Verification
-- [ ] Original issue reproduced before fix
-- [ ] Fix resolves issue (not just hides it)
+
+- [ ] Original issue resolved
 - [ ] Edge cases tested
-- [ ] No regressions (other features still work)
+- [ ] No regressions
 
-### Documentation
-- [ ] Root cause documented
-- [ ] Solution documented
-- [ ] Lessons learned captured
-- [ ] Logs or examples saved for future reference
+### Prevention Seed
 
----
-
-## Common Pitfalls to Avoid
-
-❌ **Shotgun debugging** — Change everything → ✅ One change, test, observe  
-❌ **Ignoring error messages** — "Probably network" → ✅ Read exact error, search it  
-❌ **Fixing without testing** — Apply change, assume it works → ✅ Reproduce, fix, re-test  
-❌ **Assuming environment** — "Works on my machine" → ✅ Verify in actual environment  
-❌ **Blaming external deps** — "Library is broken" → ✅ Verify your usage first  
-
----
-
-## Example Usage
-
-**Scenario:** AROMA sync fails with "ENOENT: file not found"
-
-### Step 1: Gather Information
-```
-Error: "ENOENT: /path/to/file.md not found"
-Context: Running npm run sync-to-markdown
-Recent changes: Git pull merged new files
-Environment: Dev, Node v25.5.0, SQLite v3.45
-```
-
-### Step 2: Formulate Hypothesis
-```
-Hypothesis 1 (70%): Sync script expects files that don't exist yet
-Hypothesis 2 (30%): Git pull didn't update worktree correctly
-```
-
-### Step 3: Test Hypothesis 1
-```
-Test: Check if files exist in repository
-Command: ls /path/to/file.md
-Result: ❌ File does NOT exist
-
-Conclusion: Hypothesis 1 confirmed
-```
-
-### Step 4: Implement Fix
-```typescript
-// Check if file exists before reading
-if (fs.existsSync(filePath)) {
-  const content = fs.readFileSync(filePath, 'utf-8');
-  // ... process content
-} else {
-  console.log(`File not found: ${filePath}`);
-  // Skip or create placeholder
-}
-```
-
-### Step 5: Verify & Document
-```
-Test: Run sync again
-Result: ✅ Sync completes without error
-Edge cases: ✅ Works when files exist, ✅ Handles missing files gracefully
-Regression: ✅ Other sync operations still work
-
-Fix: File existence check added before read
-Root cause: Sync script didn't handle missing files
+**Pattern:** [Is this a pattern that could recur?]
+**Seed:** [Lesson to preserve for the wisdom-garden]
+**Prevention:** [What systemic change would prevent this class of bug?]
 ```
 
 ---
 
-## Integration with Other Skills
+## XI. Skill Metadata
 
-**Use with:**
-- `workspace-navigation` - When debugging collaborative workspaces
-- `repo-context-sync` - When debugging git integration issues
-- `web-research` - When searching error codes or similar issues online
-
-**Pattern:**
-```
-Error occurs → debugging(gather, hypothesize, test) → 
-  Fix → Verify → Document
-```
-
----
-
-## Skill Metadata
-
-**Token Efficiency:** ~8,000-15,000 tokens per debugging session (systematic approach, targeted testing)  
-**Quality Impact:** Ensures bugs are fixed at root cause, not symptoms; prevents regressions  
+**Token Efficiency:** ~8,000-15,000 tokens per debugging session (systematic approach, targeted testing)
+**Quality Impact:** Ensures bugs are fixed at root cause, not symptoms; prevents regressions
 **Maintenance:** Update when new debugging patterns emerge
 
-**Related Skills:**
-- `research-modes` - Deep investigation techniques
-- `web-research` - Error code lookup and similar issues
-- `specification-writer` - Documenting root causes and fixes
-
 ---
 
-**Last Updated:** 2026-02-02  
-**Maintained By:** Cipher 🧭  
-**Status:** Active — Ready for implementation
+**Last Updated:** 2026-04-06
+**Status:** Active

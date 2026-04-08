@@ -1,12 +1,13 @@
 ---
 name: pre-implementation-checklist
-description: Verify specifications are ready before commissioning implementation agents. Use as a quality gate before handoff, to catch spec-to-codebase drift, or before parallel track execution. Trigger phrases: 'verify the spec', 'pre-commission check', 'track 0 alignment', 'ready to commission', 'verify spec-to-code'.
+description: A checklist to ensure a smooth and successful handoff of a specification to an autonomous implementation agent. Use before committing a final specification.
 ---
 
 # Pre-Implementation Checklist Skill
 
-**Version:** 1.1  
-**Created:** 2026-02-04  
+**Version:** 1.1
+**Created:** 2026-02-04
+**Last Updated:** 2026-04-06
 **Author:** Manus AI  
 **Purpose:** To provide a final quality gate before handing a specification to an autonomous development agent, ensuring all prerequisites are met for a successful implementation.
 
@@ -29,34 +30,6 @@ By completing this checklist, we honor the builder's time and energy. We minimiz
 ---
 
 ## III. The Checklist Workflow
-
-### Step 0: Track 0 — Pre-Commission Alignment Check
-
-Before appending the quality checklist, run a pre-commission alignment check. This catches spec-to-codebase drift that accumulates between when a spec was written and when implementation begins.
-
-**When to run:** Always. Before every commission. Especially when there is a time gap between writing the spec and commissioning the work, or when the codebase has changed since the spec was authored.
-
-**The Track 0 process:**
-
-1. **Read the actual codebase** — not assumptions from the spec. Run `repo-context-sync` or manually inspect:
-   - Types and interfaces that the spec references
-   - API endpoints and their current signatures
-   - File structure and import patterns
-   - Existing test infrastructure
-
-2. **Read the implementation prompts** — compare what the prompt assumes exists vs. what actually exists.
-
-3. **Identify every mismatch** — between spec assumptions and codebase reality. Common mismatches:
-   - Types referenced in the spec that don't exist yet
-   - APIs the spec assumes that have different signatures
-   - File paths or import patterns that have changed
-   - Dependencies the spec assumes that aren't installed
-
-4. **Fix mismatches** — Write a focused Track 0 remediation prompt that creates the missing infrastructure before parallel work begins. Track 0 runs sequentially; parallel tracks follow only after Track 0 is complete.
-
-**Evidence:** In the v0.2.x era, Track 0 cost ~1 day but saved 3-5 days of debugging spec-to-code drift during parallel implementation.
-
-**Key triggers:** "pre-commission check", "track 0", "verify before commissioning", "spec-to-code alignment"
 
 ### Step 1: Append the Checklist to the Specification
 
@@ -120,14 +93,6 @@ Once the checklist is complete, you can confidently commission the implementatio
 -   [ ] **Final Review Complete:** This checklist has been fully completed and reviewed.
 -   [ ] **Specification is Final:** The document status is marked as "Final".
 -   [ ] **Implementation Ready:** You are now ready to commission the implementation agent.
-
-### 0. Track 0 — Pre-Commission Alignment
-
--   [ ] **Codebase Verified:** The actual codebase has been read (not assumed) and matches the spec's assumptions.
--   [ ] **Types Verified:** All types, interfaces, and data structures referenced in the spec exist in the codebase.
--   [ ] **APIs Verified:** All API endpoints referenced have the expected signatures.
--   [ ] **File Structure Verified:** File paths and import patterns match expectations.
--   [ ] **Remediation Complete:** Any mismatches have been fixed via a Track 0 remediation prompt before parallel tracks begin.
 ```
 
 ---
@@ -138,3 +103,52 @@ Once the checklist is complete, you can confidently commission the implementatio
 -   **Treat it as a Conversation:** Use the checklist as a final opportunity to discuss any lingering uncertainties.
 -   **Empower the Gatekeeper:** The agent responsible for the handoff (typically Manus) is empowered to halt the process if the checklist is not complete.
 -   **Adapt as Needed:** If you find that items are consistently `N/A` or that new checks are needed, propose an update to this skill.
+
+---
+
+## VI. Example
+
+**Problem:** The HTMLCraft Studio v1.0.0 specification was ready for handoff to the Zenflow implementation agent. The spec was 2,500 words covering the DIP scoring engine, Alpine.js template system, and KaTeX math rendering integration. Previous handoffs to Zenflow had experienced a ~30% rework rate due to ambiguous success criteria and missing dependency information.
+
+**Process:**
+1. Appended the Pre-Implementation Checklist template to the end of the HTMLCraft Studio v1.0.0 specification.
+2. Reviewed each item collaboratively:
+   - **Vision & Goals:** Checked. Purpose was clear ("self-contained HTML app builder"), goals were measurable ("408 tests passing"), success criteria were testable ("all templates render correctly in file:// protocol").
+   - **Technical Readiness:** Found a gap -- the database schema section was missing the IndexedDB fallback strategy for `file://` protocol (IndexedDB is blocked on `file://`). Paused and added the localStorage fallback pattern.
+   - **Implementation Plan:** Found another gap -- the testing strategy did not specify how to test the `@media print` stylesheet. Added a requirement for print preview screenshot comparison.
+   - **Risk & Quality:** The rollback plan was missing. Added a simple rollback: "revert to the previous template directory if new templates fail validation."
+   - **Handoff:** Marked all items as complete after addressing the 3 gaps.
+3. Commissioned the Zenflow agent with the now-verified specification.
+
+**Outcome:** HTMLCraft Studio v1.0.0 shipped with 408 tests passing and zero rework requests. The 3 gaps caught by the checklist (IndexedDB fallback, print testing, rollback plan) would each have caused a failed implementation attempt without the pre-implementation gate.
+
+**Key Insight:** The checklist's value is not in confirming what is already there -- it is in forcing you to confront what is missing. The gaps found during checklist review are consistently the items that would have caused implementation failure.
+
+---
+
+## VII. Common Pitfalls
+
+1. **Checking items without verifying them.** Marking "APIs are Specified" as complete without actually reading the API section to confirm it includes methods, endpoints, request bodies, and error codes.
+   - *Solution:* For each checklist item, physically navigate to the relevant section of the spec and read it. The check mark means "I verified this," not "I believe this exists."
+
+2. **Treating the checklist as a formality.** Running through the checklist quickly at the end, rubber-stamping everything, because the spec "feels done."
+   - *Solution:* Schedule the checklist review as a distinct 15-30 minute activity, not a 2-minute addendum. The checklist review is where the last 10% of quality comes from.
+
+3. **Not updating the spec when gaps are found.** Finding that the testing strategy is incomplete but checking the item anyway with a mental note to "fix it later."
+   - *Solution:* The workflow is explicit: "If an item is not addressed, pause and update the specification accordingly." Do not proceed past a failed check.
+
+4. **Using the same checklist for every type of spec.** Applying the full checklist (including database schema and rollback plan sections) to a documentation-only spec or a design system spec where those items are genuinely not applicable.
+   - *Solution:* Mark items as N/A when they truly do not apply, but document why. If more than half the checklist is N/A, consider whether a simplified checklist variant is needed for that spec type.
+
+5. **Skipping the checklist for "small" changes.** Deciding that a minor feature does not warrant the full pre-implementation checklist because "it is only a few files."
+   - *Solution:* Scale the checklist, do not skip it. For small changes, a 5-minute abbreviated review (clarity of purpose, testable success criteria, dependencies met) still catches the most common handoff failures.
+
+---
+
+## VIII. Related Skills
+
+- **write-release-specification** -- The upstream skill that produces the specifications this checklist validates. Use write-release-specification to create the spec, then this checklist to verify it.
+- **parallel-tracks-pattern** -- When commissioning parallel tracks, apply this checklist to each track's specification independently before handoff.
+- **health-supervisor** -- The health sprint commissions generated by health-supervisor should also pass this checklist before being sent to implementation agents.
+- **write-frontend-spec-from-backend** -- Frontend specs are particularly prone to missing API contract details. This checklist catches those gaps before the frontend agent encounters them at build time.
+- **pre-commission-alignment** -- A more comprehensive quality gate for multi-track commissions. Use pre-implementation-checklist for single specs, pre-commission-alignment for coordinated multi-spec handoffs.

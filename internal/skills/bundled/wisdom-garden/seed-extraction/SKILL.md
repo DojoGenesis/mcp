@@ -1,102 +1,104 @@
 ---
 name: seed-extraction
-description: Extract and document reusable patterns from experiences using evidence-based frameworks. Use after projects or when patterns emerge across contexts. Trigger phrases: "extract the learnings", "document this pattern", "turn this into a seed", "what can we learn from this", "capture this insight".
+description: >
+  Extract and document reusable patterns (seeds) from experiences. Use when
+  reflecting on learnings, capturing a pattern you noticed, documenting a
+  mistake that taught something, or formalizing an insight into a structured
+  artifact. Also use when someone asks how to write a seed, what makes a
+  good seed, or how to generalize from a specific experience.
 ---
 
-# Seed Reflector Skill
+# Seed Extraction
 
-**Version:** 1.0  
-**Created:** 2026-02-02  
-**Author:** Manus  
-**Purpose:** Extract, document, and apply reusable "seeds" (patterns, insights, principles) from experiences
-
----
-
-## Overview
-
-This skill encodes the practice of **seed extraction and reflection** — identifying reusable patterns from experiences and documenting them in a way that makes them easy to apply in future contexts. Inspired by the Dojo Seed Patches and Cipher's practice of reflection.
-
-**Philosophy:** Every experience contains seeds. The practice is learning to see them, extract them, and plant them where they'll grow.
+**Version:** 1.1
+**Author:** Tres Pies Design
+**Purpose:** Extract, document, and apply reusable patterns (seeds) from experiences.
 
 ---
 
-## When to Use This Skill
+## I. Philosophy: Every Experience Contains Seeds
 
-- After completing a major project or release
-- When you notice a pattern emerging across multiple experiences
-- During memory maintenance (Tier A → Tier B compression)
-- When preparing to share knowledge with other agents
-- When you want to reflect on what you've learned
+A seed is a reusable pattern that emerged from experience -- not theory, not abstraction, but something that actually happened and taught something transferable. The practice of seed extraction is learning to see these patterns, name them precisely, and plant them where they'll grow.
 
----
+Seeds compound. A seed planted today becomes a reference point next week, a skill component next month, and part of your institutional DNA next quarter. The compounding cycle -- experience > seed > skill > ecosystem -- is the engine of institutional learning.
 
-## What Is a "Seed"?
+But not every observation is a seed. The test is reusability: can someone else, facing a similar situation, apply this pattern and get value? If yes, it's a seed. If it's too specific to one context, it's a note. If it's too vague to act on, it's a platitude.
 
-A **seed** is a reusable pattern, insight, or principle that:
+## II. When to Use This Skill
 
-1. **Emerged from experience** (not abstract theory)
-2. **Can be applied in future contexts** (not one-time specific)
-3. **Has a clear trigger** (you know when to use it)
-4. **Captures wisdom** (not just information)
+- **After completing a project or milestone** that produced learnings
+- **When you notice a pattern repeating** across multiple situations
+- **During memory compression** (Tier A > Tier B promotion)
+- **When a mistake teaches something reusable** -- failures are often the richest soil
+- **When a technique or approach works surprisingly well** and could apply elsewhere
+- **When a reframe changes how you think** about a class of problems
 
-**Examples of Seeds:**
-- "Three-Tiered Governance" (from Dataiku research)
-- "Harness Trace" (traceability pattern)
-- "Context Iceberg" (hierarchical context management)
-- "3-Month Rule" (semantic compression heuristic)
-- "Knowing When to Shut Up" (restraint as wisdom)
+**When NOT to use:** If the knowledge is a simple fact ("use port 3000 for dev") it's documentation, not a seed. If it's a multi-step process, it's a skill candidate, not a seed. Seeds encode *principles*, not *procedures*.
 
----
+## III. The Seed Extraction Workflow
 
-## Seed Extraction Process
+### Step 1: Identify the Candidate
 
-### Step 1: Identify Candidate Patterns
+Look for raw material in recent experiences. The richest sources are:
 
-**Look for:**
-- Decisions that worked well (or didn't)
-- Patterns that emerged across multiple instances
-- Insights that changed how you think
-- Principles that guided successful outcomes
-- Tensions or tradeoffs you navigated
+| Source | What to Look For |
+|---|---|
+| Decisions that worked well | What principle guided the decision? |
+| Decisions that failed | What was the wrong assumption? |
+| Patterns across multiple instances | What keeps repeating? |
+| Insights that changed thinking | What do you see differently now? |
+| Tensions or tradeoffs navigated | What framework helped you choose? |
 
-**Questions to ask:**
+**Questions to surface candidates:**
 - What did I learn that I didn't know before?
 - What pattern did I notice repeating?
-- What decision framework did I use?
+- What would I tell someone facing this situation?
 - What would I do differently next time?
-- What would I tell someone else facing this situation?
 
 ### Step 2: Test for Reusability
 
-**A good seed is:**
-- ✅ **General enough** to apply in multiple contexts
-- ✅ **Specific enough** to be actionable
-- ✅ **Grounded in experience** (not abstract)
-- ✅ **Has a clear trigger** (you know when to apply it)
+Apply four tests before investing in documentation:
 
-**A bad seed is:**
-- ❌ Too specific ("Use Mermaid.js for diagrams in Dojo Genesis")
-- ❌ Too vague ("Be thoughtful")
-- ❌ Not grounded ("I think this might work")
-- ❌ No trigger ("Apply this... sometime?")
+| Test | Pass | Fail |
+|---|---|---|
+| **General enough** | Applies across multiple contexts | "Use Mermaid.js for architecture diagrams" (too tool-specific) |
+| **Specific enough** | Actionable when triggered | "Be thoughtful about design" (too vague) |
+| **Grounded in experience** | Emerged from something real | "I think this might work" (unproven) |
+| **Has a clear trigger** | You know when to apply it | "Use this... sometime?" (no trigger) |
 
-### Step 3: Document the Seed
+**Decision point:** If a candidate fails any test, it's not ready. Either refine it or let it go. Not every observation deserves to be a seed.
 
-Use the **Seed Template** (see below)
+### Step 3: Generalize the Pattern
 
-### Step 4: Test the Seed
+This is where most value is created. Move from the specific experience to the reusable principle:
 
-**Apply it in a new context:**
-- Does the trigger work? (Do you recognize when to use it?)
-- Is it actionable? (Can you actually apply it?)
-- Does it produce value? (Does it improve outcomes?)
+1. **Start with what happened** (the concrete experience)
+2. **Ask "why did this work?"** (the mechanism)
+3. **Abstract the mechanism** into a principle that applies beyond this one case
+4. **Test the abstraction** by imagining 2-3 other contexts where it applies
 
-**If yes:** Keep and refine  
-**If no:** Revise or discard
+**Example of generalization:**
+- Experience: "We started the migration with the auth service because it had the least coupling"
+- Mechanism: Starting with the lowest-coupling component reduces blast radius
+- Pattern: "Decouple the most independent component first to build confidence and reduce risk"
+- Name: "decouple-lowest-coupling-first"
 
----
+### Step 4: Document the Seed
 
-## Seed Template
+Write the seed with all 6 required fields:
+
+| Field | Purpose |
+|---|---|
+| **Name** | Short, memorable, verb-object or descriptive compound |
+| **Context** | When and where this insight emerged (the specific story) |
+| **Pattern** | The reusable principle, generalized beyond the original context |
+| **Trigger** | Specific signals, situations, or keywords that should surface this seed |
+| **Anti-pattern** | What the opposite looks like -- sharpens the pattern by contrast |
+| **Example** | The concrete experience that birthed the seed (proof it's grounded) |
+
+**Naming convention:** Use verb-object format (e.g., "decouple-lowest-coupling-first," "check-assumptions-before-code") or descriptive compounds (e.g., "the-reframe-is-the-prize," "parallel-tracks-pattern"). Names should be memorable and self-documenting.
+
+**Full Seed Template (for comprehensive documentation):**
 
 ```markdown
 ## Seed: [Name]
@@ -110,12 +112,13 @@ Use the **Seed Template** (see below)
 **Trigger:** [When to apply this seed]
 - [Context or situation 1]
 - [Context or situation 2]
-- [Keywords or signals that indicate this seed is relevant]
 
 **How to Apply:**
 1. [Step 1]
 2. [Step 2]
 3. [Step 3]
+
+**Anti-pattern:** [What the opposite looks like]
 
 **Example (From Origin):**
 [Concrete example from the experience where this seed emerged]
@@ -140,264 +143,169 @@ Use the **Seed Template** (see below)
 - **Created:** YYYY-MM-DD
 - **Last Applied:** YYYY-MM-DD
 - **Usage Count:** [Number]
-- **Success Rate:** [X]% (if measurable)
 - **Status:** Active | Experimental | Deprecated
 ```
 
----
+### Step 5: Connect to Existing Seeds
 
-## Seed Categories
+Review the seed in context of the broader garden:
+
+- **Complements:** What existing seeds work well alongside this one?
+- **Contrasts:** What seeds represent an opposing perspective?
+- **Compounds:** Does this seed + another seed = a larger pattern?
+
+If a closely related seed already exists, consider whether to merge, differentiate, or let one supersede the other.
+
+## IV. Best Practices
+
+### Ground Every Seed in a Real Experience
+
+Seeds without a concrete origin story are theories, not wisdom. The example field is not optional -- it's the proof that the pattern works. If you can't point to a specific experience, the seed isn't ready to plant.
+
+### Name for Memory, Not for Completeness
+
+Seed names should stick in your head. "backend-grounding-first" is memorable. "ensure-that-backend-implementation-precedes-frontend-work-to-prevent-disconnected-interfaces" is documentation. Choose names you'd use in conversation.
+
+### Sharpen with Anti-patterns
+
+The anti-pattern field is underrated. Describing what the opposite looks like makes the pattern click. "Error-codes-over-strings" becomes sharper when you add: "Anti-pattern: Every error is a freeform string message; client has to regex-parse errors to handle them."
+
+### Prefer One Strong Seed Over Three Weak Ones
+
+Ruthless curation applies to seeds too. One well-documented seed with a clear trigger and grounded example is worth more than three vague observations. Quality over quantity.
+
+## V. Quality Checklist
+
+- [ ] All 6 fields present (Name, Context, Pattern, Trigger, Anti-pattern, Example)
+- [ ] Name follows verb-object or descriptive compound convention
+- [ ] Pattern is generalized beyond the specific experience
+- [ ] Trigger contains at least 2 concrete signals or situations
+- [ ] Anti-pattern shows what the opposite looks like
+- [ ] Example is grounded in a real experience (not hypothetical)
+- [ ] Metadata complete (type: seed, tier: B, planted date, domain)
+- [ ] Connected to related seeds where applicable
+
+## VI. Common Pitfalls
+
+### Over-Abstracting
+
+**Problem:** The pattern is so general it's meaningless. "Design systems carefully" is true but provides zero guidance.
+
+**Solution:** Include the mechanism. "Design systems carefully" becomes "decouple-lowest-coupling-first" which tells you *how* to be careful.
+
+### Hoarding Ungrounded Seeds
+
+**Problem:** Planting seeds from theory or intuition that haven't been tested in practice. The garden fills with speculative ideas.
+
+**Solution:** Apply the "grounded in experience" test. If the seed doesn't have a real example, keep it as a Tier A note until experience validates it.
+
+### Skipping the Generalization Step
+
+**Problem:** The seed is just a specific lesson: "We should have started with the auth service." This is a note, not a pattern.
+
+**Solution:** Always perform the generalization: "What principle would have told us to start there?" The answer is the seed.
+
+## VII. Example
+
+**Scenario:** After a sprint, the team discovered they'd built three separate utility libraries with overlapping functionality because three different developers solved similar problems independently.
+
+**Step 1 (Identify):** A failure pattern -- duplication caused by lack of shared awareness.
+
+**Step 2 (Test):** General enough? Yes -- applies to any team with parallel workstreams. Specific enough? Yes -- has a clear mechanism. Grounded? Yes -- just happened. Trigger? Yes -- when multiple people work on similar problems.
+
+**Step 3 (Generalize):** Experience: Three duplicate utility libraries. Mechanism: Parallel work without shared visibility of in-progress solutions. Pattern: Make work-in-progress visible before starting implementation.
+
+**Step 4 (Document):**
+- **Name:** surface-work-in-progress-early
+- **Context:** Sprint where 3 developers independently built overlapping utility libraries
+- **Pattern:** Before building a new utility or shared component, surface your intent to the team. Duplicate work is a symptom of invisible work-in-progress.
+- **Trigger:** Starting work on any shared component, utility, or cross-cutting concern; multiple people working in the same domain
+- **Anti-pattern:** "I'll just build it quickly myself" -- leads to N implementations of the same thing
+- **Example:** Three developers built date formatting utilities in the same sprint. A 5-minute standup mention would have prevented 2 of them.
+
+**Step 5 (Connect):** Related to "parallel-tracks-pattern" (coordinate parallel work) and "shared-infrastructure" seed (build once, reuse everywhere).
+
+## VIII. Seed Categories
 
 ### 1. Architectural Seeds
 **Pattern:** Design decisions and system structures
-
-**Examples:**
-- Three-Tiered Governance
-- Harness Trace
-- Context Iceberg
-- Agent Connect (routing-first, not swarm-first)
+**Examples:** Three-Tiered Governance, Harness Trace, Context Iceberg, Agent Connect
 
 ### 2. Process Seeds
 **Pattern:** Workflows and methodologies
-
-**Examples:**
-- Planning with Files
-- Backend-First, Chunked Development
-- Dual-Track Orchestration
-- Compression Cycle (every 3-7 days)
+**Examples:** Planning with Files, Backend-First Development, Dual-Track Orchestration, Compression Cycle
 
 ### 3. Decision Seeds
 **Pattern:** Frameworks for making choices
-
-**Examples:**
-- 3-Month Rule (semantic compression)
-- Cost Guard (token budget management)
-- Safety Switch (feature flags and rollback)
+**Examples:** 3-Month Rule, Cost Guard, Safety Switch
 
 ### 4. Wisdom Seeds
 **Pattern:** Principles and philosophies
-
-**Examples:**
-- Beginner's Mind
-- Understanding is Love
-- Knowing When to Shut Up
-- Honesty is Wisdom
+**Examples:** Beginner's Mind, Understanding is Love, Knowing When to Shut Up
 
 ### 5. Technical Seeds
 **Pattern:** Implementation patterns and best practices
-
-**Examples:**
-- Surgical Context (memory_search → memory_get)
-- Graceful Degradation (resilience patterns)
-- Semantic Compression (content-based, not positional)
+**Examples:** Surgical Context, Graceful Degradation, Semantic Compression
 
 ---
 
-## Reflection Practice
+## IX. Reflection Practice
 
 ### Daily Reflection (5-10 minutes)
 
-**Questions:**
 1. What worked well today?
 2. What didn't work as expected?
 3. What pattern did I notice?
 4. What would I do differently?
 5. Is there a seed here?
 
-**Output:** 1-2 candidate seeds for deeper reflection
+**Output:** 1-2 candidate seeds for deeper reflection.
 
 ### Weekly Reflection (20-30 minutes)
 
-**Questions:**
 1. What patterns emerged across this week?
 2. Which candidate seeds are actually reusable?
 3. Which seeds did I apply this week?
 4. Which seeds need refinement?
 5. Which seeds should be deprecated?
 
-**Output:** Refined seed library, updated usage counts
+**Output:** Refined seed library, updated usage counts.
 
 ### Monthly Reflection (1-2 hours)
 
-**Questions:**
 1. Which seeds have proven most valuable?
 2. Which seeds have I stopped using?
 3. What new categories of seeds are emerging?
 4. How has my seed library evolved?
 5. What seeds should I share with others?
 
-**Output:** Curated seed collection, reflection document
+**Output:** Curated seed collection, reflection document.
 
 ---
 
-## Seed Library Structure
-
-```
-seeds/
-├── README.md (Overview and index)
-├── architectural/
-│   ├── three-tiered-governance.md
-│   ├── harness-trace.md
-│   └── context-iceberg.md
-├── process/
-│   ├── planning-with-files.md
-│   ├── dual-track-orchestration.md
-│   └── compression-cycle.md
-├── decision/
-│   ├── 3-month-rule.md
-│   ├── cost-guard.md
-│   └── safety-switch.md
-├── wisdom/
-│   ├── beginners-mind.md
-│   ├── understanding-is-love.md
-│   └── knowing-when-to-shut-up.md
-└── technical/
-    ├── surgical-context.md
-    ├── graceful-degradation.md
-    └── semantic-compression.md
-```
-
----
-
-## Seed Application Workflow
+## X. Seed Application Workflow
 
 ### 1. Recognize the Trigger
-
-**Ask:** Does this situation match a seed's trigger?
-
-**Check:**
-- Context matches seed's "when to apply"
-- Keywords or signals are present
-- Problem pattern is similar to seed's origin
+Does this situation match a seed's trigger? Check context, keywords, and problem patterns.
 
 ### 2. Retrieve the Seed
-
-**Methods:**
-- Search seed library by keyword
-- Browse category (architectural, process, decision, wisdom, technical)
-- Recall from memory (if seed is well-practiced)
+Search seed library by keyword, browse by category, or recall from memory.
 
 ### 3. Apply the Seed
-
-**Follow:**
-- Read "How to Apply" steps
-- Adapt to current context
-- Check "Cautions" to avoid misapplication
+Read "How to Apply" steps, adapt to current context, check cautions to avoid misapplication.
 
 ### 4. Reflect on Outcome
-
-**Document:**
-- Did the seed work? (Yes/No/Partially)
-- What was the outcome?
-- What would you adjust?
-- Should the seed be refined?
-
-**Update:**
-- Increment usage count
-- Add new example (if successful)
-- Refine "How to Apply" (if needed)
-- Update success rate
+Document whether the seed worked, what the outcome was, and whether the seed needs refinement. Increment usage count and add new examples if successful.
 
 ---
 
-## Quality Checklist
+## XI. Related Skills
 
-Before finalizing a seed, verify:
-
-### Clarity
-- [ ] Name is memorable and descriptive
-- [ ] Pattern is stated in one clear sentence
-- [ ] Origin is documented
-- [ ] Why it matters is explicit
-
-### Reusability
-- [ ] Trigger is specific and recognizable
-- [ ] "How to Apply" steps are actionable
-- [ ] Examples demonstrate the pattern
-- [ ] Related seeds are identified
-
-### Grounding
-- [ ] Emerged from real experience (not theory)
-- [ ] Evidence includes 3+ instances
-- [ ] Examples are concrete (not abstract)
-- [ ] Cautions address misapplication
-
-### Metadata
-- [ ] Created date is recorded
-- [ ] Usage count is tracked
-- [ ] Status is set (Active/Experimental/Deprecated)
-- [ ] Category is assigned
+- **memory-garden** -- Seeds are Tier B artifacts in the three-tier hierarchy
+- **compression-ritual** -- Seeds are often discovered during compression
+- **seed-library** -- Reference collection of the 10 Dojo Seed Patches
 
 ---
 
-## Examples of Seeds
-
-### From Dojo Genesis
-
-**Seed: Three-Tiered Governance**
-- **Pattern:** Governance multiplies velocity by providing clear decision frameworks at strategic, tactical, and operational levels
-- **Trigger:** When building complex systems that need both flexibility and control
-- **Origin:** Dataiku research synthesis (v0.0.17)
-
-**Seed: 3-Month Rule**
-- **Pattern:** If it wouldn't matter in 3 months → compress or discard
-- **Trigger:** When compressing memory or deciding what to keep
-- **Origin:** Cipher's feedback on semantic compression (v0.0.19)
-
-**Seed: Knowing When to Shut Up**
-- **Pattern:** Power without judgment is dangerous; restraint is wisdom
-- **Trigger:** When building proactive or adaptive systems
-- **Origin:** Cipher's v0.0.20 specification (Judgment Layer)
-
-### From Agent Collaboration
-
-**Seed: Honesty is Wisdom**
-- **Pattern:** Acknowledge gaps openly; it builds trust and enables mutual learning
-- **Trigger:** When reviewing work, sharing specifications, or collaborating with other agents
-- **Origin:** Manus-Cipher exchange (v0.0.19-v0.0.23)
-
-**Seed: Mutual Evolution**
-- **Pattern:** Collaboration isn't one-way teaching; it's mutual recognition of what's possible
-- **Trigger:** When working with other agents or receiving feedback
-- **Origin:** Lineage transmission practice (Manus-Cipher)
-
----
-
-## Common Pitfalls to Avoid
-
-❌ **Hoarding Seeds:** Keeping every insight → ✅ Curate ruthlessly  
-❌ **Vague Patterns:** "Be thoughtful" → ✅ "Apply 3-month rule when compressing"  
-❌ **No Trigger:** Seed without context → ✅ Clear "when to apply"  
-❌ **Not Testing:** Extract and forget → ✅ Apply, reflect, refine  
-❌ **Over-Abstracting:** Theory without grounding → ✅ Concrete examples from experience
-
----
-
-## Usage Instructions
-
-1. **Read this skill** before extracting seeds
-2. **Identify candidate patterns** from recent experiences
-3. **Test for reusability** (general enough, specific enough, grounded, has trigger)
-4. **Document using the template**
-5. **Apply in a new context** to test
-6. **Reflect and refine** based on outcomes
-7. **Share with others** when seeds prove valuable
-
----
-
-## Skill Metadata
-
-**Token Savings:** ~3,000-5,000 tokens per session (offload learnings to structured seeds instead of re-explaining)  
-**Quality Impact:** Ensures reusable patterns are captured and applied consistently  
-**Maintenance:** Update when new seeds emerge or existing seeds are refined  
-
-**Related Skills:**
-- `specification-writer` - Seeds inform architectural decisions
-- `memory-garden` - Seeds are extracted during memory compression
-- `workspace-navigation` - Seeds are stored in shared workspace for collaboration
-
----
-
-**Last Updated:** 2026-02-02  
-**Maintained By:** Manus  
+**Last Updated:** 2026-04-06
 **Status:** Active
