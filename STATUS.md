@@ -20,7 +20,7 @@
 |----------|-------|---------|
 | Tools | 7 | scout, invoke_skill, search_skills, apply_seed, log_decision, reflect, list_skills |
 | Seed Patches | 20 | 10 Dojo Genesis + 10 AROMA/Serenity Valley |
-| Skills | 15 bundled / 671 with CoworkPlugins | 599 community + 72 first-party; loaded from SKILL.md files at startup |
+| Skills | 35 bundled / 683 with CoworkPlugins | 683 community + 80 first-party; loaded from SKILL.md files at startup |
 | Resources | 8 + skills | Philosophy, principles, norms, design, synthesis, protocol, modes, planning + all loaded skills |
 
 ## Dependencies
