@@ -160,8 +160,8 @@ func TestNewLoader_BundledFallback(t *testing.T) {
 	if loader.Count() == 0 {
 		t.Fatal("NewLoader with empty path loaded 0 bundled skills")
 	}
-	if loader.Count() != 31 {
-		t.Errorf("expected 31 bundled skills, got %d", loader.Count())
+	if loader.Count() != 35 {
+		t.Errorf("expected 35 bundled skills, got %d", loader.Count())
 	}
 }
 
