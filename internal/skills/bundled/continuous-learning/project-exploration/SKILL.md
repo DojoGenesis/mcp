@@ -1,6 +1,13 @@
 ---
 name: project-exploration
 description: Guides exploration of new, large-scale projects to assess collaboration potential. Explore philosophy and patterns before diving into implementation. Use when encountering a new codebase, repository, or project.
+triggers:
+  - "explore this project"
+  - "onboard to this codebase"
+  - "assess this repo for collaboration"
+  - "evaluate this library or framework"
+  - "explore a new codebase"
+  - "understand this project before contributing"
 ---
 
 # Project Exploration Skill

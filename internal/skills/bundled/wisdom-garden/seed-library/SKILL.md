@@ -7,6 +7,13 @@ description: >
   or "which pattern should I use?" Also use when keywords match seed
   triggers: governance, multi-agent, context, routing, cost, safety,
   traceability, infrastructure, complexity gating.
+triggers:
+  - "what seed applies here"
+  - "which pattern should I use"
+  - "apply a dojo seed"
+  - "look up a seed pattern"
+  - "seed library"
+  - "which dojo pattern fits"
 ---
 
 # Seed Library

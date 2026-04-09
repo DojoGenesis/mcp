@@ -5,6 +5,13 @@ description: >
   completeness reviews, and terminology updates. Use when skill names become
   unclear, terminology needs updating, periodic audits are due, new skills need
   cross-reference validation, or skills are reported as confusing or outdated.
+triggers:
+  - "update a skill"
+  - "fix an outdated skill"
+  - "rename a skill"
+  - "skill maintenance"
+  - "refactor skill terminology"
+  - "skill is confusing or outdated"
 ---
 
 # Skill Maintenance

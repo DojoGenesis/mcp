@@ -6,6 +6,13 @@ description: >
   Use when you've completed a complex multi-step task that should be standardized,
   when you find yourself repeating the same sequence of actions, during
   retrospectives, or when capturing institutional knowledge from one-off processes.
+triggers:
+  - "extract this process into a skill"
+  - "turn this workflow into a skill"
+  - "document this process for reuse"
+  - "we keep repeating this pattern"
+  - "capture this as institutional knowledge"
+  - "standardize this workflow"
 ---
 
 # Process Extraction

@@ -65,6 +65,7 @@ func NewLoader(skillsPath string) (*Loader, error) {
 
 // loadFromFilesystem walks the CoworkPlugins directory structure.
 func (l *Loader) loadFromFilesystem(root string) error {
+	var skipped int
 	pluginsDir := filepath.Join(root, "plugins")
 	info, err := os.Stat(pluginsDir)
 	if err != nil || !info.IsDir() {
@@ -105,11 +106,17 @@ func (l *Loader) loadFromFilesystem(root string) error {
 
 			skill, err := parseSkillFile(string(data), pluginName, skillFile)
 			if err != nil {
+				skipped++
+				fmt.Fprintf(os.Stderr, "WARN: skills loader: skipping %s: %v\n", skillFile, err)
 				continue // skip files that fail to parse
 			}
 
 			l.addSkill(skill)
 		}
+	}
+
+	if skipped > 0 {
+		fmt.Fprintf(os.Stderr, "WARN: skills loader: skipped %d skills due to parse errors\n", skipped)
 	}
 
 	return nil

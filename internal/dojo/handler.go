@@ -52,7 +52,7 @@ func unmarshalArgs(arguments any, dest interface{}) error {
 func (h *Handler) RegisterTools(s *server.MCPServer) {
 	// Tool 1: dojo.scout
 	s.AddTool(mcp.Tool{
-		Name:        "dojo.scout",
+		Name:        "dojo_scout",
 		Description: "Strategic analysis scaffold. Returns a 4-step framework for navigating strategic decisions: identify tension, scout routes, synthesize, and decide. Claude fills in the judgment.",
 		InputSchema: mcp.ToolInputSchema{
 			Type: "object",
@@ -68,7 +68,7 @@ func (h *Handler) RegisterTools(s *server.MCPServer) {
 
 	// Tool 2: dojo.invoke_skill
 	s.AddTool(mcp.Tool{
-		Name:        "dojo.invoke_skill",
+		Name:        "dojo_invoke_skill",
 		Description: "Load a specific methodology skill by name. Returns the full workflow as actionable steps. Use dojo.search_skills or dojo.list_skills to find skill names.",
 		InputSchema: mcp.ToolInputSchema{
 			Type: "object",
@@ -84,7 +84,7 @@ func (h *Handler) RegisterTools(s *server.MCPServer) {
 
 	// Tool 3: dojo.search_skills
 	s.AddTool(mcp.Tool{
-		Name:        "dojo.search_skills",
+		Name:        "dojo_search_skills",
 		Description: "Search the methodology library for skills matching a query. Returns top matches with descriptions and usage guidance.",
 		InputSchema: mcp.ToolInputSchema{
 			Type: "object",
@@ -100,7 +100,7 @@ func (h *Handler) RegisterTools(s *server.MCPServer) {
 
 	// Tool 4: dojo.apply_seed
 	s.AddTool(mcp.Tool{
-		Name:        "dojo.apply_seed",
+		Name:        "dojo_apply_seed",
 		Description: "Apply a Dojo seed patch (reusable thinking pattern) to a specific situation. Returns the seed's core insight formatted as active guidance with a checklist.",
 		InputSchema: mcp.ToolInputSchema{
 			Type: "object",
@@ -120,7 +120,7 @@ func (h *Handler) RegisterTools(s *server.MCPServer) {
 
 	// Tool 5: dojo.log_decision
 	s.AddTool(mcp.Tool{
-		Name:        "dojo.log_decision",
+		Name:        "dojo_log_decision",
 		Description: "Write an Architecture Decision Record (ADR) to disk. The only write-capable tool. Creates a persistent markdown artifact capturing a key decision with context, rationale, and consequences.",
 		InputSchema: mcp.ToolInputSchema{
 			Type: "object",
@@ -148,7 +148,7 @@ func (h *Handler) RegisterTools(s *server.MCPServer) {
 
 	// Tool 6: dojo.reflect
 	s.AddTool(mcp.Tool{
-		Name:        "dojo.reflect",
+		Name:        "dojo_reflect",
 		Description: "Structured reflection grounded in your methodology library. Searches skills and seeds matching your session description and returns relevant frameworks, patterns, and reflection questions.",
 		InputSchema: mcp.ToolInputSchema{
 			Type: "object",
@@ -164,11 +164,24 @@ func (h *Handler) RegisterTools(s *server.MCPServer) {
 
 	// Tool 7: dojo.list_skills
 	s.AddTool(mcp.Tool{
-		Name:        "dojo.list_skills",
-		Description: "List all available methodology skills grouped by plugin category. Shows skill names and descriptions for use with dojo.invoke_skill.",
+		Name:        "dojo_list_skills",
+		Description: "List available methodology skills grouped by plugin category. Supports optional filtering by plugin name and pagination via limit/offset. Shows skill names and descriptions for use with dojo.invoke_skill.",
 		InputSchema: mcp.ToolInputSchema{
-			Type:       "object",
-			Properties: map[string]interface{}{},
+			Type: "object",
+			Properties: map[string]interface{}{
+				"plugin": map[string]interface{}{
+					"type":        "string",
+					"description": "Optional plugin name to filter results (e.g., 'strategic-thinking'). If omitted, all plugins are listed.",
+				},
+				"limit": map[string]interface{}{
+					"type":        "integer",
+					"description": "Maximum number of skills to return (default 50).",
+				},
+				"offset": map[string]interface{}{
+					"type":        "integer",
+					"description": "Number of skills to skip before returning results (default 0).",
+				},
+			},
 		},
 	}, h.handleListSkills)
 }
@@ -223,24 +236,8 @@ func (h *Handler) RegisterResources(s *server.MCPServer) {
 		})
 	}
 
-	// Register skill resources
-	for _, skill := range h.skillsLoader.AllSkills() {
-		skillCopy := skill
-		s.AddResource(mcp.Resource{
-			URI:         fmt.Sprintf("dojo://skills/%s/%s", skillCopy.Plugin, skillCopy.Name),
-			Name:        skillCopy.Name,
-			Description: skillCopy.Description,
-			MIMEType:    "text/markdown",
-		}, func(ctx context.Context, request mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
-			return []mcp.ResourceContents{
-				mcp.TextResourceContents{
-					URI:      request.Params.URI,
-					MIMEType: "text/markdown",
-					Text:     skillCopy.Content,
-				},
-			}, nil
-		})
-	}
+	// Skills are accessed exclusively via tools (dojo_search_skills, dojo_list_skills,
+	// dojo_invoke_skill). No MCP resource registration is performed for skills.
 }
 
 // --- Tool Handlers ---
@@ -311,7 +308,7 @@ func (h *Handler) handleSearchSkills(ctx context.Context, request mcp.CallToolRe
 		return mcp.NewToolResultError(fmt.Sprintf("Invalid arguments: %v", err)), nil
 	}
 
-	results := h.skillsLoader.Search(args.Query, 5)
+	results, totalMatching := h.skillsLoader.SearchWithTotal(args.Query, 20)
 
 	if len(results) == 0 {
 		return mcp.NewToolResultText(fmt.Sprintf("No skills found matching: \"%s\"\n\nTry broader terms, or use `dojo.list_skills` to see all available skills.", args.Query)), nil
@@ -326,6 +323,8 @@ func (h *Handler) handleSearchSkills(ctx context.Context, request mcp.CallToolRe
 		fmt.Fprintf(&sb, "**When to use:** %s\n", skill.Description)
 		fmt.Fprintf(&sb, "**Invoke:** `dojo.invoke_skill` with name \"%s\"\n\n", skill.Name)
 	}
+
+	fmt.Fprintf(&sb, "(showing top %d of %d matches for \"%s\")\n", len(results), totalMatching, args.Query)
 
 	return mcp.NewToolResultText(sb.String()), nil
 }
@@ -442,22 +441,86 @@ func (h *Handler) handleReflect(ctx context.Context, request mcp.CallToolRequest
 }
 
 func (h *Handler) handleListSkills(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	var args struct {
+		Plugin string `json:"plugin"`
+		Limit  int    `json:"limit"`
+		Offset int    `json:"offset"`
+	}
+	if err := unmarshalArgs(request.Params.Arguments, &args); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Invalid arguments: %v", err)), nil
+	}
+
+	// Apply defaults
+	if args.Limit <= 0 {
+		args.Limit = 50
+	}
+	if args.Offset < 0 {
+		args.Offset = 0
+	}
+
 	var sb strings.Builder
 
-	total := h.skillsLoader.Count()
-	fmt.Fprintf(&sb, "# Dojo Genesis Skills (%d available)\n\n", total)
-
-	for _, pluginName := range h.skillsLoader.PluginNames() {
-		pluginSkills := h.skillsLoader.ListByPlugin()[pluginName]
-		fmt.Fprintf(&sb, "## %s (%d skills)\n", pluginName, len(pluginSkills))
-		for _, skill := range pluginSkills {
-			fmt.Fprintf(&sb, "- **%s** -- %s\n", skill.Name, firstSentence(skill.Description))
+	// Collect the flat list of skills to paginate, optionally filtered by plugin
+	byPlugin := h.skillsLoader.ListByPlugin()
+	var pluginNames []string
+	if args.Plugin != "" {
+		if _, ok := byPlugin[args.Plugin]; ok {
+			pluginNames = []string{args.Plugin}
 		}
+	} else {
+		pluginNames = h.skillsLoader.PluginNames()
+	}
+
+	// Build a flat ordered slice for pagination
+	type entry struct {
+		plugin string
+		name   string
+		desc   string
+	}
+	var allEntries []entry
+	for _, pName := range pluginNames {
+		for _, s := range byPlugin[pName] {
+			allEntries = append(allEntries, entry{plugin: pName, name: s.Name, desc: s.Description})
+		}
+	}
+
+	total := len(allEntries)
+	start := args.Offset
+	if start > total {
+		start = total
+	}
+	end := start + args.Limit
+	if end > total {
+		end = total
+	}
+	page := allEntries[start:end]
+
+	if args.Plugin != "" {
+		fmt.Fprintf(&sb, "# Dojo Genesis Skills — plugin: %s (%d available)\n\n", args.Plugin, total)
+	} else {
+		fmt.Fprintf(&sb, "# Dojo Genesis Skills (%d available)\n\n", h.skillsLoader.Count())
+	}
+
+	// Group the page entries by plugin for readability
+	currentPlugin := ""
+	for _, e := range page {
+		if e.plugin != currentPlugin {
+			if currentPlugin != "" {
+				sb.WriteString("\n")
+			}
+			pluginSkillCount := len(byPlugin[e.plugin])
+			fmt.Fprintf(&sb, "## %s (%d skills)\n", e.plugin, pluginSkillCount)
+			currentPlugin = e.plugin
+		}
+		fmt.Fprintf(&sb, "- **%s** -- %s\n", e.name, firstSentence(e.desc))
+	}
+	if len(page) > 0 {
 		sb.WriteString("\n")
 	}
 
 	sb.WriteString("Use `dojo.invoke_skill` with the skill name to load the full workflow.\n")
 	sb.WriteString("Use `dojo.search_skills` with a query to find the right skill for your task.\n")
+	fmt.Fprintf(&sb, "(showing %d\u2013%d of %d skills)\n", start+1, end, total)
 
 	return mcp.NewToolResultText(sb.String()), nil
 }

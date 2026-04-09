@@ -1,6 +1,13 @@
 ---
 name: debugging-troubleshooting
 description: Systematic debugging and troubleshooting for code, systems, and workflows. Follows a 7-step methodology — reproduce, isolate, hypothesize, test, fix, verify, learn. Intuition is useful but methodology prevents rabbit holes.
+triggers:
+  - "debug this issue"
+  - "troubleshoot this bug"
+  - "something is broken"
+  - "code behaves unexpectedly"
+  - "systematic debugging"
+  - "help me find the root cause"
 ---
 
 # Debugging & Troubleshooting Skill

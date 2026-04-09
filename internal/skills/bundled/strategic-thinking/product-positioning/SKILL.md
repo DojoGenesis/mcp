@@ -7,6 +7,13 @@ description: >
   native-or-web decisions. Identifies the unique value of each option through
   the unlocking question "What is this uniquely good at?" and produces a
   positioning statement with context, audience, and job-to-be-done.
+triggers:
+  - "should we keep or deprecate"
+  - "product positioning"
+  - "reframe this binary decision"
+  - "what is this feature uniquely good at"
+  - "web vs desktop vs mobile decision"
+  - "build or buy"
 ---
 
 # Product Positioning Skill

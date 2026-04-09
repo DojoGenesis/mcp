@@ -1,6 +1,13 @@
 ---
 name: handoff-protocol
 description: A structured protocol for handing off work between autonomous agents, ensuring context is preserved, goals are clear, and the receiving agent is set up for success.
+triggers:
+  - "hand off to another agent"
+  - "create a handoff package"
+  - "prepare the handoff"
+  - "agent handoff"
+  - "pass this work to the next agent"
+  - "spec is done, hand off to implementation"
 ---
 
 # Agent Handoff Protocol Skill

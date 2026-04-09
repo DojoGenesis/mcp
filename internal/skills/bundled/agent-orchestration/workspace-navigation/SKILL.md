@@ -1,6 +1,13 @@
 ---
 name: workspace-navigation
 description: Efficiently navigate and interact with shared agent workspaces and discussion rooms. Use when working in collaborative repositories, organizing thoughts, or coordinating with other agents. Enables structured collaboration without file chaos.
+triggers:
+  - "navigate the workspace"
+  - "organize the shared workspace"
+  - "set up the agent workspace"
+  - "workspace navigation"
+  - "how do I structure work in the shared repo"
+  - "coordinate files across agents"
 ---
 
 # Agent Workspace Navigator Skill

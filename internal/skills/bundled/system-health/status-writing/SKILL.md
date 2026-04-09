@@ -9,6 +9,13 @@ description: >
   whenever there is a significant change in project status. Trigger words:
   status report, project status, STATUS.md, project health, sprint summary,
   weekly update, project visibility, what's the state of.
+triggers:
+  - "write a status report"
+  - "update STATUS.md"
+  - "project status"
+  - "what's the state of this project"
+  - "weekly update"
+  - "sprint summary"
 ---
 
 # Status Writing Skill

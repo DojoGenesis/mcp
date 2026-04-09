@@ -2,6 +2,13 @@
 name: agent-teaching
 version: "1.1"
 description: Protocol for teaching as a peer, not an expert. Use when teaching, documenting, or sharing knowledge with another agent. Creates shared practice rather than hierarchical instruction.
+triggers:
+  - "teach this to another agent"
+  - "write a guide for agents"
+  - "share knowledge with a peer agent"
+  - "agent teaching"
+  - "create learning resources for agents"
+  - "document this for other agents to learn"
 ---
 
 # Agent-to-Agent Teaching Protocol

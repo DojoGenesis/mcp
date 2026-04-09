@@ -1,6 +1,13 @@
 ---
 name: release-specification
 description: Write production-ready, A+ quality specifications for software releases. A spec is a contract, not a wishlist. Encodes the disciplined engineering practice of creating comprehensive, precise, actionable, and testable release specifications.
+triggers:
+  - "write a release specification"
+  - "write a spec for this release"
+  - "create a production-ready spec"
+  - "spec out this feature"
+  - "write the release spec"
+  - "document this release with a specification"
 ---
 
 # Release Specification Skill

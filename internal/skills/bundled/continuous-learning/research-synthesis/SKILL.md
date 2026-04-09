@@ -1,6 +1,13 @@
 ---
 name: research-synthesis
 description: Synthesize multiple research files into actionable insights. Turns raw research into coherent understanding by cross-referencing sources, identifying patterns and contradictions, and producing theme-based synthesis with actionable recommendations.
+triggers:
+  - "synthesize these research files"
+  - "find patterns across these sources"
+  - "research synthesis"
+  - "consolidate research into insights"
+  - "cross-reference these documents"
+  - "literature review"
 ---
 
 # Research Synthesis Skill

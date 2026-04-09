@@ -1,6 +1,13 @@
 ---
 name: context-ingestion
 description: A skill for general-purpose planning grounded in uploaded files. Creates deeply informed plans from specs, docs, code, research, or images. Includes intent-based routing to select the right planning mode automatically.
+triggers:
+  - "create a plan from these files"
+  - "plan based on uploaded context"
+  - "ingest these files and plan"
+  - "plan from this spec"
+  - "build a plan from these documents"
+  - "context ingestion"
 ---
 
 # Context Ingestion Skill

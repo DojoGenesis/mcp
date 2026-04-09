@@ -7,6 +7,13 @@ description: >
   existing product, or when a multi-surface product feels fragmented. Produces a
   strategy document with surfaces, jobs-to-be-done, feature map, handoff design,
   business model, and phasing plan.
+triggers:
+  - "design a multi-surface strategy"
+  - "product across desktop and mobile"
+  - "adding a mobile app to our product"
+  - "multi-surface product feels fragmented"
+  - "what should each surface do"
+  - "web desktop mobile strategy"
 ---
 
 # Multi-Surface Product Strategy Skill

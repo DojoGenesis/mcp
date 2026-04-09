@@ -6,6 +6,13 @@ description: >
   mistake that taught something, or formalizing an insight into a structured
   artifact. Also use when someone asks how to write a seed, what makes a
   good seed, or how to generalize from a specific experience.
+triggers:
+  - "extract a seed"
+  - "plant a seed"
+  - "document this insight as a seed"
+  - "capture this pattern"
+  - "write a seed from this experience"
+  - "how do I write a seed"
 ---
 
 # Seed Extraction

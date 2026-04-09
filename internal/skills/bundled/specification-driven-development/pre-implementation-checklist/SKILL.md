@@ -1,6 +1,13 @@
 ---
 name: pre-implementation-checklist
 description: A checklist to ensure a smooth and successful handoff of a specification to an autonomous implementation agent. Use before committing a final specification.
+triggers:
+  - "pre-implementation checklist"
+  - "review the spec before handing off"
+  - "verify the spec is ready"
+  - "final check before commissioning"
+  - "is this spec ready for implementation"
+  - "pre-commission quality gate"
 ---
 
 # Pre-Implementation Checklist Skill

@@ -22,12 +22,20 @@ type searchResult struct {
 //
 // Returns at most maxResults skills, sorted by relevance descending.
 func (l *Loader) Search(query string, maxResults int) []Skill {
+	skills, _ := l.SearchWithTotal(query, maxResults)
+	return skills
+}
+
+// SearchWithTotal is like Search but also returns the total number of skills
+// that scored above the 0.1 threshold before capping to maxResults.
+func (l *Loader) SearchWithTotal(query string, maxResults int) ([]Skill, int) {
 	if query == "" {
 		// Empty query returns all skills (up to maxResults)
-		if maxResults <= 0 || maxResults > len(l.skills) {
-			return l.skills
+		total := len(l.skills)
+		if maxResults <= 0 || maxResults > total {
+			return l.skills, total
 		}
-		return l.skills[:maxResults]
+		return l.skills[:maxResults], total
 	}
 
 	queryLower := strings.ToLower(strings.TrimSpace(query))
@@ -45,6 +53,9 @@ func (l *Loader) Search(query string, maxResults int) []Skill {
 		}
 	}
 
+	// Total matching before capping
+	totalMatching := len(results)
+
 	// Sort by relevance descending
 	sort.Slice(results, func(i, j int) bool {
 		return results[i].Relevance > results[j].Relevance
@@ -59,7 +70,7 @@ func (l *Loader) Search(query string, maxResults int) []Skill {
 	for i, r := range results {
 		skills[i] = r.Skill
 	}
-	return skills
+	return skills, totalMatching
 }
 
 // calculateSkillRelevance scores a single skill against the query.

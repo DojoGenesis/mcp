@@ -6,6 +6,13 @@ description: >
   wisdom, tending the memory garden, promoting artifacts between tiers, or
   applying the 3-month rule to triage what matters. Also use when someone
   asks about memory structure, tier placement, or semantic compression.
+triggers:
+  - "write a daily note"
+  - "tend the memory garden"
+  - "promote a memory artifact"
+  - "apply the 3-month rule"
+  - "memory garden structure"
+  - "where does this artifact go in memory"
 ---
 
 # Memory Garden

@@ -6,6 +6,13 @@ description: >
   performing context hygiene, handing off a project, or when the context feels
   heavy and noisy. Also use when someone asks how to compress, distill, or
   summarize a session into lasting artifacts.
+triggers:
+  - "compress this session"
+  - "distill this conversation"
+  - "end of session compression"
+  - "perform the compression ritual"
+  - "context is getting heavy"
+  - "summarize session into artifacts"
 ---
 
 # Compression Ritual

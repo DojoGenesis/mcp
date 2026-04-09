@@ -1,6 +1,13 @@
 ---
 name: parallel-tracks
 description: A structured process for splitting large development tasks into 2-4 independent parallel tracks that can be executed simultaneously, reducing timelines by 50-70% while improving focus and architectural discipline.
+triggers:
+  - "split into parallel tracks"
+  - "run tracks in parallel"
+  - "parallel development tracks"
+  - "speed up with parallelism"
+  - "divide work across agents"
+  - "parallel tracks pattern"
 ---
 
 # Parallel Tracks Skill

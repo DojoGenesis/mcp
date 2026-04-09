@@ -1,6 +1,13 @@
 ---
 name: research-modes
 description: Structured approaches for deep and wide research. Deep Research (5 phases) finds answers. Wide Research (4 phases) finds questions. Research Synthesis (5 phases) finds patterns across sources. Research builds understanding, not just collects information.
+triggers:
+  - "do deep research on"
+  - "wide research on the landscape"
+  - "research this topic"
+  - "investigate this question"
+  - "explore the competitive landscape"
+  - "research modes"
 ---
 
 # Research Modes Skill

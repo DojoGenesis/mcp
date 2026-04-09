@@ -10,6 +10,13 @@ description: >
   Even for simple questions like "walk me through the features" or "what are the
   main capabilities", this skill produces a structured answer grounded in the
   actual code, not just marketing copy.
+triggers:
+  - "map the system capabilities"
+  - "what does this app actually do"
+  - "semantic cluster map"
+  - "walk me through the features"
+  - "behavioral architecture map"
+  - "explain this codebase to someone"
 ---
 
 # Semantic Clusters Skill

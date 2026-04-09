@@ -6,6 +6,13 @@ description: >
   significant strategic decision, when a project feels stuck, when there are competing
   priorities, or at the beginning of a new project or major release. Produces a
   strategic decision document with tension statement, routes, synthesis, and next steps.
+triggers:
+  - "scout the strategic options"
+  - "help me think through this decision"
+  - "explore routes before committing"
+  - "project feels stuck"
+  - "strategic scout"
+  - "what are our options here"
 ---
 
 # Strategic Scout Skill

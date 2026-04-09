@@ -1,6 +1,13 @@
 ---
 name: frontend-from-backend
 description: Write production-ready frontend specifications deeply grounded in existing backend architecture. Prevents integration issues by starting with backend reality, not frontend imagination.
+triggers:
+  - "write a frontend spec from the backend"
+  - "ground the frontend in the backend"
+  - "frontend spec with backend context"
+  - "frontend from backend"
+  - "derive frontend types from Go structs"
+  - "frontend spec before coding"
 ---
 
 # Frontend From Backend Skill

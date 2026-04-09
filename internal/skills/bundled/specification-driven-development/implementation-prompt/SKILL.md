@@ -1,6 +1,13 @@
 ---
 name: implementation-prompt
 description: Transform specifications into structured, self-contained prompts for autonomous implementation agents. A prompt is a commission — a formal request for craftsmanship.
+triggers:
+  - "write an implementation prompt"
+  - "commission the implementation agent"
+  - "turn this spec into a prompt"
+  - "create an implementation commission"
+  - "write the agent prompt for this feature"
+  - "spec to prompt"
 ---
 
 # Implementation Prompt Skill

@@ -6,6 +6,13 @@ description: >
   quarterly maintenance, after creating 5+ new skills, when skills are reported
   as confusing, before major releases, after major refactors, or when onboarding
   new contributors to assess current ecosystem health.
+triggers:
+  - "audit all skills"
+  - "grade the skill ecosystem"
+  - "skill ecosystem health"
+  - "quarterly skill audit"
+  - "which skills need upgrading"
+  - "assess skill completeness"
 ---
 
 # Skill Audit

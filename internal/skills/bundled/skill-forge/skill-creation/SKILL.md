@@ -7,6 +7,13 @@ description: >
   scratch, updating an existing skill, designing skill architecture, or when a
   user says "make a skill for X." Also use when formalizing a workflow, capturing
   domain knowledge, or building institutional memory.
+triggers:
+  - "create a skill"
+  - "build a new skill"
+  - "make a skill for"
+  - "write a skill"
+  - "formalize a workflow into a skill"
+  - "add a skill"
 ---
 
 # Skill Creation

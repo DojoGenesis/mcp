@@ -6,6 +6,13 @@ description: >
   of a problem feels too narrow, after an initial strategic scout has been
   completed, or when facing a complex strategic decision where the first
   answer is unlikely to be the best answer. The reframe is the prize.
+triggers:
+  - "let's do another round of scouting"
+  - "the initial scout didn't feel quite right"
+  - "reframe and re-scout"
+  - "iterative scouting"
+  - "first scout is done, now what"
+  - "the framing feels too narrow"
 ---
 
 # Iterative Scouting Pattern Skill

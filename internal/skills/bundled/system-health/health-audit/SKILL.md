@@ -9,6 +9,13 @@ description: >
   major releases, on a recurring schedule, or whenever a project feels at risk.
   Trigger words: health check, audit, code review, technical debt, security
   review, project health, sustainability, code quality.
+triggers:
+  - "run a health audit"
+  - "health check on this repo"
+  - "technical debt review"
+  - "code quality audit"
+  - "project feels at risk"
+  - "security review"
 ---
 
 # Health Audit Skill

@@ -1,6 +1,13 @@
 ---
 name: decision-propagation
 description: A structured protocol for recording architectural decisions and systematically propagating their effects across an interconnected document ecosystem. Use when decisions affect multiple documents, when scope changes impact releases, or when maintaining coherence across a living documentation system.
+triggers:
+  - "propagate this decision"
+  - "update all docs with this decision"
+  - "architectural decision affects multiple files"
+  - "decision propagation"
+  - "scope changed, update the documents"
+  - "record this decision and trace its effects"
 ---
 
 # Decision-Propagation Protocol

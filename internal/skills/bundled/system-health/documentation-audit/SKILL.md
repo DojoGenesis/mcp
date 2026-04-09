@@ -8,6 +8,13 @@ description: >
   feels stale, after major releases, before onboarding new contributors, or
   on a recurring schedule. Trigger words: documentation drift, outdated docs,
   stale README, docs audit, missing documentation, broken links, doc review.
+triggers:
+  - "audit the documentation"
+  - "docs feel out of date"
+  - "documentation drift"
+  - "stale README"
+  - "check for outdated docs"
+  - "docs audit"
 ---
 
 # Documentation Audit Skill

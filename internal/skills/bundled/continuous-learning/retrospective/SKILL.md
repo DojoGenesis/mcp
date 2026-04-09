@@ -1,6 +1,13 @@
 ---
 name: retrospective
 description: A structured process for post-sprint learning and continuous improvement. Harvest learnings instead of conducting post-mortems. Use after a major release, milestone, or at regular intervals to reflect on what went well, what was hard, and what can be improved.
+triggers:
+  - "run a retrospective"
+  - "retro after this sprint"
+  - "what went well what was hard"
+  - "harvest learnings from this release"
+  - "post-sprint reflection"
+  - "retrospective"
 ---
 
 # Retrospective Skill
