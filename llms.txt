@@ -1,0 +1,52 @@
+# DojoGenesis MCP Server
+
+> The methodology layer for Claude Code — 7 tools and 84 first-party methodology skills as active cognitive scaffolds for AI agents.
+
+## What this is
+
+The Dojo MCP Server is not a data source — it is a methods source. Every other MCP server gives AI agents more data. This one gives them better thinking frameworks. It encodes 60+ battle-tested methodology skills as active cognitive scaffolds, making Claude measurably better at software development decisions. Skills are loaded from the DojoGenesis plugins collection and exposed via the MCP protocol.
+
+## Key capabilities
+
+- `dojo.scout` — 4-step strategic analysis scaffold: frame tension, scout routes, synthesize, decide
+- `dojo.invoke_skill` — load a specific methodology skill by name, returns full workflow as actionable steps
+- `dojo.search_skills` — search the methodology library for skills matching a query
+- `dojo.apply_seed` — apply a reusable thinking pattern (seed) to a specific situation with checklist
+- `dojo.log_decision` — write an Architecture Decision Record (ADR) to disk (the only write-capable tool)
+- `dojo.reflect` — structured reflection grounded in matched skills and seeds from the methodology library
+- `dojo.list_skills` — list all available skills grouped by plugin category
+- Resources at `dojo://skills/{plugin}/{name}`, `dojo://seeds/{name}`, `dojo://resources/{name}`
+- 8 documentation resources (AROMA philosophy, EIT principles, etc.)
+- 20 seed patches for reusable thinking patterns
+
+## How to use with LLMs
+
+Install via Claude Code by adding the server to `.claude/settings.json` with `DOJO_SKILLS_PATH` pointing to your plugins directory. Use `dojo.list_skills` to discover available methodology skills, then `dojo.invoke_skill` to load a specific skill before tackling a complex decision. Use `dojo.scout` when facing architectural or strategic tensions. Use `dojo.log_decision` to persist Architecture Decision Records during implementation.
+
+## Installation (Claude Code)
+
+```json
+{
+  "mcpServers": {
+    "dojo": {
+      "command": "/path/to/dojo-mcp-server",
+      "env": {
+        "DOJO_SKILLS_PATH": "/path/to/plugins",
+        "DOJO_ADR_PATH": "./decisions"
+      }
+    }
+  }
+}
+```
+
+## Docker
+
+```
+docker run -i --rm ghcr.io/dojogenesis/mcp-server:latest
+```
+
+## Links
+
+- GitHub: https://github.com/DojoGenesis/mcp
+- Docker: ghcr.io/dojogenesis/mcp-server
+- Plugins (skill source): https://github.com/DojoGenesis/plugins
