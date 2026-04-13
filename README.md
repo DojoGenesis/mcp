@@ -1,11 +1,11 @@
 # Dojo Genesis MCP Server
 
-The methodology layer for Claude Code -- the first MCP server that makes Claude measurably better at software development decisions by encoding 60 battle-tested thinking frameworks as active cognitive scaffolds.
+The methodology layer for Claude Code -- the first MCP server that makes Claude measurably better at software development decisions by encoding 84 first-party methodology skills as active cognitive scaffolds.
 
 Every other MCP server gives Claude more data. This one gives Claude better *methods*.
 
 <!-- Badges -->
-[![CI](https://github.com/DojoGenesis/mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/DojoGenesis/mcp-server/actions/workflows/ci.yml)
+[![CI](https://github.com/DojoGenesis/mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/DojoGenesis/mcp/actions/workflows/ci.yml)
 [![Go](https://img.shields.io/badge/Go-1.23+-00ADD8?logo=go&logoColor=white)](https://go.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-compatible-blueviolet)](https://modelcontextprotocol.io)
@@ -79,11 +79,21 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 | `dojo.reflect` | Structured reflection grounded in matched skills and seeds from the methodology library. |
 | `dojo.list_skills` | List all available skills grouped by plugin category. |
 
-### Skills (60 from CoworkPlugins, 15 bundled)
+### Skills (84 from CoworkPlugins, 35 bundled)
 
-Skills are complete, battle-tested methodology workflows loaded from SKILL.md files at startup. When `DOJO_SKILLS_PATH` is set, all 60 CoworkPlugins skills are available. Without it, 15 key skills are bundled in the binary.
+Skills are complete, battle-tested methodology workflows loaded from SKILL.md files at startup. When `DOJO_SKILLS_PATH` is set, all 84 first-party CoworkPlugins skills are available. Without it, 35 key skills across 7 plugins are embedded in the binary via `go:embed`.
 
-**Bundled skills:** `strategic-scout`, `release-specification`, `implementation-prompt`, `debugging`, `retrospective`, `pre-implementation-checklist`, `parallel-tracks`, `health-audit`, `seed-extraction`, `memory-garden`, `context-ingestion`, `research-modes`, `skill-creation`, `handoff-protocol`, `status-writing`
+**Bundled plugins and skills:**
+
+| Plugin | Skills |
+|--------|--------|
+| `agent-orchestration` | agent-teaching, decision-propagation, handoff-protocol, workflow-router, workspace-navigation |
+| `continuous-learning` | debugging, project-exploration, research-modes, research-synthesis, retrospective, web-research-external |
+| `skill-forge` | mcp-cloudflare-builder, mcp-server-builder, process-extraction, skill-audit, skill-creation, skill-maintenance |
+| `specification-driven-development` | context-ingestion, frontend-from-backend, implementation-prompt, parallel-tracks, pre-implementation-checklist, release-specification |
+| `strategic-thinking` | iterative-scouting, multi-surface-strategy, product-positioning, strategic-scout |
+| `system-health` | documentation-audit, health-audit, semantic-clusters, status-writing |
+| `wisdom-garden` | compression-ritual, memory-garden, seed-extraction, seed-library |
 
 ### Seed Patches (20)
 
@@ -141,8 +151,8 @@ The server works out of the box with zero configuration (bundled skills, default
 ## Building from Source
 
 ```bash
-git clone https://github.com/DojoGenesis/mcp-server.git
-cd mcp-server
+git clone https://github.com/DojoGenesis/mcp.git
+cd mcp
 
 # Build
 go build -o dojo-mcp-server ./cmd/server
