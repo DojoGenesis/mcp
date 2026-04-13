@@ -12,3 +12,4 @@ dojo-mcp-server
 
 # Environment
 .env
+.claude/
