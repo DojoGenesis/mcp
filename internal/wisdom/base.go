@@ -2,6 +2,7 @@ package wisdom
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -91,6 +92,7 @@ func (b *Base) Search(query string) []SearchResult {
 		})
 	}
 
+	sort.Slice(results, func(i, j int) bool { return results[i].Relevance > results[j].Relevance })
 	return results
 }
 

@@ -28,7 +28,7 @@ func TestHandlerRegistration(t *testing.T) {
 	)
 
 	tmpDir := t.TempDir()
-	dojoHandler, err := dojo.NewHandler("", tmpDir)
+	dojoHandler, err := dojo.NewHandler("", tmpDir, nil)
 	if err != nil {
 		t.Fatalf("NewHandler returned error: %v", err)
 	}
@@ -51,7 +51,7 @@ func TestHandlerRegistration_WithSkillsPath(t *testing.T) {
 
 	tmpDir := t.TempDir()
 	// Non-existent skills path should fall back to bundled
-	dojoHandler, err := dojo.NewHandler("/nonexistent", tmpDir)
+	dojoHandler, err := dojo.NewHandler("/nonexistent", tmpDir, nil)
 	if err != nil {
 		t.Fatalf("NewHandler returned error: %v", err)
 	}

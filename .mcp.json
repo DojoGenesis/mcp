@@ -1,8 +1,9 @@
 {
   "mcpServers": {
     "dojo": {
-      "command": "/Users/alfonsomorales/ZenflowProjects/dojo-mcp-server/dojo-mcp-server",
-      "args": []
+      "command": "go",
+      "args": ["run", "./cmd/server"],
+      "cwd": "/Users/alfonsomorales/ZenflowProjects/MCPByDojoGenesis"
     }
   }
 }

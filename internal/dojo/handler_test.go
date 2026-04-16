@@ -12,7 +12,7 @@ import (
 func newTestHandler(t *testing.T) *Handler {
 	t.Helper()
 	tmpDir := t.TempDir()
-	h, err := NewHandler("", tmpDir)
+	h, err := NewHandler("", tmpDir, nil)
 	if err != nil {
 		t.Fatalf("NewHandler returned error: %v", err)
 	}
@@ -58,7 +58,7 @@ func TestNewHandler(t *testing.T) {
 
 func TestNewHandler_WithSkillsPath(t *testing.T) {
 	tmpDir := t.TempDir()
-	h, err := NewHandler("/nonexistent/path", tmpDir)
+	h, err := NewHandler("/nonexistent/path", tmpDir, nil)
 	if err != nil {
 		t.Fatalf("NewHandler with nonexistent skills path should not error (falls back to bundled): %v", err)
 	}

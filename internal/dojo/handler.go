@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/DojoGenesis/mcp-server/internal/decisions"
+	"github.com/DojoGenesis/mcp-server/internal/gateway"
 	"github.com/DojoGenesis/mcp-server/internal/skills"
 	"github.com/DojoGenesis/mcp-server/internal/wisdom"
 	"github.com/mark3labs/mcp-go/mcp"
@@ -18,10 +19,12 @@ type Handler struct {
 	wisdomBase     *wisdom.Base
 	skillsLoader   *skills.Loader
 	decisionWriter *decisions.Writer
+	gw             *gateway.Client
 }
 
 // NewHandler creates a new Dojo handler with skills loading and decision writing.
-func NewHandler(skillsPath, adrPath string) (*Handler, error) {
+// gw may be nil; tools will fall back to local data when gw is nil or offline.
+func NewHandler(skillsPath, adrPath string, gw *gateway.Client) (*Handler, error) {
 	loader, err := skills.NewLoader(skillsPath)
 	if err != nil {
 		return nil, fmt.Errorf("load skills: %w", err)
@@ -36,6 +39,7 @@ func NewHandler(skillsPath, adrPath string) (*Handler, error) {
 		wisdomBase:     wisdom.NewBase(),
 		skillsLoader:   loader,
 		decisionWriter: writer,
+		gw:             gw,
 	}, nil
 }
 
@@ -48,7 +52,7 @@ func unmarshalArgs(arguments any, dest interface{}) error {
 	return json.Unmarshal(data, dest)
 }
 
-// RegisterTools registers all 7 Dojo tools with the MCP server.
+// RegisterTools registers all 24 Dojo tools with the MCP server.
 func (h *Handler) RegisterTools(s *server.MCPServer) {
 	// Tool 1: dojo.scout
 	s.AddTool(mcp.Tool{
@@ -184,6 +188,164 @@ func (h *Handler) RegisterTools(s *server.MCPServer) {
 			},
 		},
 	}, h.handleListSkills)
+
+	// ─── Memory tools (8-10) ────────────────────────────────────────────────
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_memory_list",
+		Description: "List all memory entries from the Gateway. Returns ID, type, and content for each memory.",
+		InputSchema: mcp.ToolInputSchema{Type: "object", Properties: map[string]interface{}{}},
+	}, h.handleMemoryList)
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_memory_store",
+		Description: "Store a new memory entry in the Gateway. Accepts content text and optional type.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"content": map[string]interface{}{"type": "string", "description": "The memory content to store"},
+				"type":    map[string]interface{}{"type": "string", "description": "Optional memory type (e.g., 'feedback', 'project', 'user')"},
+			},
+			Required: []string{"content"},
+		},
+	}, h.handleMemoryStore)
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_memory_search",
+		Description: "Search memory entries by query. Returns matching memories ranked by relevance.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"query": map[string]interface{}{"type": "string", "description": "Search query for memory content"},
+			},
+			Required: []string{"query"},
+		},
+	}, h.handleMemorySearch)
+
+	// ─── Seed tools (11-13) ─────────────────────────────────────────────────
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_seed_list",
+		Description: "List all seeds from the Gateway garden, or hardcoded seeds if offline.",
+		InputSchema: mcp.ToolInputSchema{Type: "object", Properties: map[string]interface{}{}},
+	}, h.handleSeedList)
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_seed_create",
+		Description: "Plant a new seed in the Gateway garden. Requires a name and content.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"name":        map[string]interface{}{"type": "string", "description": "Seed name (short, hyphenated)"},
+				"content":     map[string]interface{}{"type": "string", "description": "The seed content — the reusable pattern or insight"},
+				"description": map[string]interface{}{"type": "string", "description": "Optional one-line description"},
+			},
+			Required: []string{"name", "content"},
+		},
+	}, h.handleSeedCreate)
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_seed_search",
+		Description: "Search seeds by keyword in name and content.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"query": map[string]interface{}{"type": "string", "description": "Search query for seeds"},
+			},
+			Required: []string{"query"},
+		},
+	}, h.handleSeedSearch)
+
+	// ─── Agent tools (14-16) ────────────────────────────────────────────────
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_agent_list",
+		Description: "List all agents registered with the Gateway, including their mode, status, and disposition.",
+		InputSchema: mcp.ToolInputSchema{Type: "object", Properties: map[string]interface{}{}},
+	}, h.handleAgentList)
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_agent_dispatch",
+		Description: "Create and dispatch a new agent with an initial task message. Returns the agent ID and response.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"name":    map[string]interface{}{"type": "string", "description": "Agent name"},
+				"mode":    map[string]interface{}{"type": "string", "description": "Agent mode (e.g., 'focused', 'balanced', 'exploratory')"},
+				"message": map[string]interface{}{"type": "string", "description": "Initial task message for the agent"},
+			},
+			Required: []string{"name", "message"},
+		},
+	}, h.handleAgentDispatch)
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_agent_chat",
+		Description: "Send a follow-up message to an existing agent by ID.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"agent_id": map[string]interface{}{"type": "string", "description": "The agent ID to send the message to"},
+				"message":  map[string]interface{}{"type": "string", "description": "The message to send"},
+			},
+			Required: []string{"agent_id", "message"},
+		},
+	}, h.handleAgentChat)
+
+	// ─── Project tools (17-19) ──────────────────────────────────────────────
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_project_status",
+		Description: "Get the current project status: name, phase, tracks, and decisions. Local-only, no Gateway needed.",
+		InputSchema: mcp.ToolInputSchema{Type: "object", Properties: map[string]interface{}{}},
+	}, h.handleProjectStatus)
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_project_track",
+		Description: "Add or update a project track. Local-only.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"action": map[string]interface{}{"type": "string", "description": "Action: 'add' or 'set'"},
+				"name":   map[string]interface{}{"type": "string", "description": "Track name"},
+				"status": map[string]interface{}{"type": "string", "description": "Track status (pending, in_progress, done, blocked)"},
+			},
+			Required: []string{"action", "name"},
+		},
+	}, h.handleProjectTrack)
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_project_decision",
+		Description: "Record a decision in the active project. Local-only.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"text": map[string]interface{}{"type": "string", "description": "The decision text to record"},
+			},
+			Required: []string{"text"},
+		},
+	}, h.handleProjectDecision)
+
+	// ─── Disposition tools (20-21) ──────────────────────────────────────────
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_disposition_list",
+		Description: "List available ADA disposition presets with their pacing, depth, tone, and initiative axes.",
+		InputSchema: mcp.ToolInputSchema{Type: "object", Properties: map[string]interface{}{}},
+	}, h.handleDispositionList)
+
+	// ─── Craft tools (22-24) ────────────────────────────────────────────────
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_converge",
+		Description: "Run a convergence check: git dirty files, recent commits, memory/seed counts. Returns RED/YELLOW/GREEN signal with guidance.",
+		InputSchema: mcp.ToolInputSchema{Type: "object", Properties: map[string]interface{}{}},
+	}, h.handleConverge)
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_health",
+		Description: "Check Gateway health: status, version, providers, uptime.",
+		InputSchema: mcp.ToolInputSchema{Type: "object", Properties: map[string]interface{}{}},
+	}, h.handleHealth)
 }
 
 // RegisterResources registers MCP resources for seeds, resources, and skills.
@@ -253,9 +415,29 @@ func (h *Handler) handleScout(ctx context.Context, request mcp.CallToolRequest) 
 		return mcp.NewToolResultError("'situation' is required and cannot be empty"), nil
 	}
 
-	// Search for strategy-related skills
-	matched := h.skillsLoader.Search(args.Situation, 3)
+	// If gateway is online, use ChatSync with the scout system prompt.
+	if h.gw != nil && h.gw.IsOnline(ctx) {
+		prompt := fmt.Sprintf(`You are a strategic analysis assistant. Apply the 4-step Dojo scout framework to this situation:
 
+Situation: %s
+
+Provide:
+1. Identify the core tension (competing forces)
+2. Scout 3-5 distinct routes/approaches with risk and tradeoff
+3. Synthesize and recommend a hybrid approach
+4. Decide: selected route, first action, review point
+
+Be concise and actionable.`, args.Situation)
+
+		result, err := h.gw.ChatSync(ctx, gateway.ChatRequest{Message: prompt})
+		if err == nil && result != "" {
+			return mcp.NewToolResultText(result), nil
+		}
+		// Fall through to scaffold on error
+	}
+
+	// Offline fallback: local scaffold
+	matched := h.skillsLoader.Search(args.Situation, 3)
 	return mcp.NewToolResultText(scoutScaffold(args.Situation, matched)), nil
 }
 
@@ -268,6 +450,27 @@ func (h *Handler) handleInvokeSkill(ctx context.Context, request mcp.CallToolReq
 	}
 	if args.Name == "" {
 		return mcp.NewToolResultError("'name' is required and cannot be empty"), nil
+	}
+
+	// If gateway is online, try to find the skill there first.
+	if h.gw != nil && h.gw.IsOnline(ctx) {
+		gwSkills, err := h.gw.SearchSkills(ctx, args.Name)
+		if err == nil {
+			for _, s := range gwSkills {
+				if strings.EqualFold(s.Name, args.Name) {
+					response := fmt.Sprintf(`# Skill: %s
+**Plugin:** %s
+**When to use:** %s
+
+---
+
+**Next step:** Invoke this skill through the Dojo Genesis Gateway.`,
+						s.Name, s.Plugin, firstSentence(s.Description))
+					return mcp.NewToolResultText(response), nil
+				}
+			}
+		}
+		// Not found in gateway — fall through to local
 	}
 
 	skill, err := h.skillsLoader.GetByName(args.Name)
@@ -306,6 +509,23 @@ func (h *Handler) handleSearchSkills(ctx context.Context, request mcp.CallToolRe
 	}
 	if err := unmarshalArgs(request.Params.Arguments, &args); err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Invalid arguments: %v", err)), nil
+	}
+
+	// If gateway is online, try gateway search first.
+	if h.gw != nil && h.gw.IsOnline(ctx) {
+		gwSkills, err := h.gw.SearchSkills(ctx, args.Query)
+		if err == nil && len(gwSkills) > 0 {
+			var sb strings.Builder
+			fmt.Fprintf(&sb, "# Skills matching: \"%s\"\n\n", args.Query)
+			fmt.Fprintf(&sb, "Found %d relevant skill(s) (from gateway):\n\n", len(gwSkills))
+			for i, s := range gwSkills {
+				fmt.Fprintf(&sb, "## %d. %s (%s)\n", i+1, s.Name, s.Plugin)
+				fmt.Fprintf(&sb, "**When to use:** %s\n", firstSentence(s.Description))
+				fmt.Fprintf(&sb, "**Invoke:** `dojo.invoke_skill` with name \"%s\"\n\n", s.Name)
+			}
+			return mcp.NewToolResultText(sb.String()), nil
+		}
+		// Fall through to local search on error or empty results
 	}
 
 	results, totalMatching := h.skillsLoader.SearchWithTotal(args.Query, 20)
@@ -458,6 +678,60 @@ func (h *Handler) handleListSkills(ctx context.Context, request mcp.CallToolRequ
 		args.Offset = 0
 	}
 
+	// If gateway is online, use gateway skills list.
+	if h.gw != nil && h.gw.IsOnline(ctx) {
+		gwSkills, err := h.gw.Skills(ctx)
+		if err == nil && len(gwSkills) > 0 {
+			// Apply plugin filter
+			var filtered []gateway.Skill
+			for _, s := range gwSkills {
+				if args.Plugin == "" || strings.EqualFold(s.Plugin, args.Plugin) {
+					filtered = append(filtered, s)
+				}
+			}
+			total := len(filtered)
+			start := args.Offset
+			if start > total {
+				start = total
+			}
+			end := start + args.Limit
+			if end > total {
+				end = total
+			}
+			page := filtered[start:end]
+
+			var sb strings.Builder
+			if args.Plugin != "" {
+				fmt.Fprintf(&sb, "# Dojo Genesis Skills — plugin: %s (%d available, from gateway)\n\n", args.Plugin, total)
+			} else {
+				fmt.Fprintf(&sb, "# Dojo Genesis Skills (%d available, from gateway)\n\n", total)
+			}
+			currentPlugin := ""
+			for _, s := range page {
+				if s.Plugin != currentPlugin {
+					if currentPlugin != "" {
+						sb.WriteString("\n")
+					}
+					fmt.Fprintf(&sb, "## %s\n", s.Plugin)
+					currentPlugin = s.Plugin
+				}
+				fmt.Fprintf(&sb, "- **%s** -- %s\n", s.Name, firstSentence(s.Description))
+			}
+			if len(page) > 0 {
+				sb.WriteString("\n")
+			}
+			sb.WriteString("Use `dojo.invoke_skill` with the skill name to load the full workflow.\n")
+			sb.WriteString("Use `dojo.search_skills` with a query to find the right skill for your task.\n")
+			if total == 0 {
+				sb.WriteString("(no skills found)\n")
+			} else {
+				fmt.Fprintf(&sb, "(showing %d\u2013%d of %d skills)\n", start+1, end, total)
+			}
+			return mcp.NewToolResultText(sb.String()), nil
+		}
+		// Fall through to local list on error or empty
+	}
+
 	var sb strings.Builder
 
 	// Collect the flat list of skills to paginate, optionally filtered by plugin
@@ -520,7 +794,11 @@ func (h *Handler) handleListSkills(ctx context.Context, request mcp.CallToolRequ
 
 	sb.WriteString("Use `dojo.invoke_skill` with the skill name to load the full workflow.\n")
 	sb.WriteString("Use `dojo.search_skills` with a query to find the right skill for your task.\n")
-	fmt.Fprintf(&sb, "(showing %d\u2013%d of %d skills)\n", start+1, end, total)
+	if total == 0 {
+		sb.WriteString("(no skills found)\n")
+	} else {
+		fmt.Fprintf(&sb, "(showing %d\u2013%d of %d skills)\n", start+1, end, total)
+	}
 
 	return mcp.NewToolResultText(sb.String()), nil
 }

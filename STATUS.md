@@ -20,7 +20,7 @@
 |----------|-------|---------|
 | Tools | 7 | scout, invoke_skill, search_skills, apply_seed, log_decision, reflect, list_skills |
 | Seed Patches | 20 | 10 Dojo Genesis + 10 AROMA/Serenity Valley |
-| Skills | 35 bundled / 683 with CoworkPlugins | 683 community + 80 first-party; loaded from SKILL.md files at startup |
+| Skills | 43 bundled / 683 with CoworkPlugins | 683 community + 80 first-party; loaded from SKILL.md files at startup |
 | Resources | 8 + skills | Philosophy, principles, norms, design, synthesis, protocol, modes, planning + all loaded skills |
 
 ## Dependencies
@@ -45,6 +45,21 @@
 - **Skills:** Loaded from filesystem at startup, with bundled fallback
 - **Write capability:** `dojo.log_decision` writes ADR markdown files to disk
 - **Search:** Keyword + trigger-based relevance scoring
+
+## Bundled Plugins
+
+| Plugin | Skills | Notes |
+|--------|--------|-------|
+| agent-orchestration | 5 | Dispatch, handoff, workspace navigation, teaching, decision propagation |
+| continuous-learning | 5 | Research modes, project exploration, retrospective, research synthesis, debugging |
+| skill-forge | 5 | Skill creation, maintenance, process extraction, file management, community scan |
+| specification-driven-development | 5 | Spec writer, release spec, implementation prompt, frontend-from-backend, parallel tracks |
+| strategic-thinking | 5 | Strategic scout, multi-surface strategy, product positioning, iterative scouting |
+| system-health | 5 | Health audit, status writing, documentation audit, repo context sync, hooks reference |
+| wisdom-garden | 5 | Memory garden, seed extraction, seed library, compression ritual, seed-to-skill converter |
+| dojo-craft | 8 | adr-writer, claude-md-guardian, codebase-viewer, convergence-checker, memory-curator, project-scaffolder, scout-writer, seed-curator |
+
+DojoCraft integration added 2026-04-15: 8 skills covering ADR authoring, CLAUDE.md auditing, codebase intelligence, convergence gating, memory management, project scaffolding, strategic scouting, and seed lifecycle.
 
 ## What Changed in v3.0.0
 

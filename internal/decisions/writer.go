@@ -9,6 +9,19 @@ import (
 	"time"
 )
 
+// uniquePath returns fp unchanged if it does not exist, otherwise appends _2,
+// _3, etc. until an unused filename is found.
+func uniquePath(fp string) string {
+	baseFP := fp
+	for i := 2; ; i++ {
+		if _, err := os.Stat(fp); os.IsNotExist(err) {
+			break
+		}
+		fp = strings.TrimSuffix(baseFP, ".md") + fmt.Sprintf("_%d.md", i)
+	}
+	return fp
+}
+
 // Writer handles writing ADR files to disk.
 type Writer struct {
 	basePath string
@@ -32,6 +45,7 @@ func (w *Writer) LogDecision(title, context, decision, consequences string) (str
 	filename := fmt.Sprintf("%s_%s.md", date, slug)
 	fp := filepath.Join(w.basePath, filename)
 
+	fp = uniquePath(fp)
 	content := formatADR(title, context, decision, consequences, date)
 
 	if err := os.WriteFile(fp, []byte(content), 0644); err != nil {
