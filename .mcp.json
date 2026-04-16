@@ -1,9 +1,12 @@
 {
   "mcpServers": {
     "dojo": {
-      "command": "go",
-      "args": ["run", "./cmd/server"],
-      "cwd": "/Users/alfonsomorales/ZenflowProjects/MCPByDojoGenesis"
+      "command": "dojo-mcp-server",
+      "env": {
+        "DOJO_GATEWAY_URL": "http://localhost:7340",
+        "DOJO_SKILLS_PATH": "/Users/alfonsomorales/ZenflowProjects/CoworkPluginsByDojoGenesis",
+        "DOJO_ADR_PATH": "./decisions"
+      }
     }
   }
 }
