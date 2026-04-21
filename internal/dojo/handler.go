@@ -333,6 +333,21 @@ func (h *Handler) RegisterTools(s *server.MCPServer) {
 		InputSchema: mcp.ToolInputSchema{Type: "object", Properties: map[string]interface{}{}},
 	}, h.handleDispositionList)
 
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_disposition_set",
+		Description: "Set the active agent disposition. Writes the value to the top-level `defaults.disposition` key in ~/.dojo/settings.json (creates the file if missing). Local-only, no Gateway needed.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"disposition": map[string]interface{}{
+					"type":        "string",
+					"description": "The disposition name to activate (e.g., 'focused', 'balanced', 'exploratory', 'deliberate'). Use dojo_disposition_list to see available options.",
+				},
+			},
+			Required: []string{"disposition"},
+		},
+	}, h.handleDispositionSet)
+
 	// ─── Craft tools (22-24) ────────────────────────────────────────────────
 
 	s.AddTool(mcp.Tool{
