@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/DojoGenesis/mcp-server/internal/fsutil"
 )
 
 // uniquePath returns fp unchanged if it does not exist, otherwise appends _2,
@@ -48,7 +50,7 @@ func (w *Writer) LogDecision(title, context, decision, consequences string) (str
 	fp = uniquePath(fp)
 	content := formatADR(title, context, decision, consequences, date)
 
-	if err := os.WriteFile(fp, []byte(content), 0644); err != nil {
+	if err := fsutil.AtomicWriteFile(fp, []byte(content), 0644); err != nil {
 		return "", fmt.Errorf("write ADR: %w", err)
 	}
 	return fp, nil
