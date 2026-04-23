@@ -7,10 +7,18 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/DojoGenesis/mcp-server/internal/fsutil"
 	"github.com/mark3labs/mcp-go/mcp"
 )
+
+// projectFileMu serializes concurrent load-modify-write sequences on
+// project.json files. AtomicWriteFile prevents torn writes, but this mutex
+// prevents two concurrent goroutines from each reading the same stale state and
+// then overwriting each other's changes.
+var projectFileMu sync.Mutex
 
 // ProjectFile represents the project.json structure for a tracked project.
 type ProjectFile struct {
@@ -71,17 +79,15 @@ func loadProject(projectDir string) (*ProjectFile, error) {
 	return &pf, nil
 }
 
-// saveProject writes project.json to the given project directory.
+// saveProject writes project.json to the given project directory atomically.
+// Callers must hold projectFileMu before calling this function.
 func saveProject(projectDir string, pf *ProjectFile) error {
 	pf.UpdatedAt = time.Now()
 	data, err := json.MarshalIndent(pf, "", "  ")
 	if err != nil {
 		return fmt.Errorf("marshal project.json: %w", err)
 	}
-	if err := os.MkdirAll(projectDir, 0755); err != nil {
-		return fmt.Errorf("create project dir: %w", err)
-	}
-	return os.WriteFile(filepath.Join(projectDir, "project.json"), data, 0644)
+	return fsutil.AtomicWriteFile(filepath.Join(projectDir, "project.json"), data, 0644)
 }
 
 func (h *Handler) handleProjectStatus(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -153,6 +159,9 @@ func (h *Handler) handleProjectTrack(_ context.Context, request mcp.CallToolRequ
 	if action != "add" && action != "set" {
 		return mcp.NewToolResultError("'action' must be 'add' or 'set'"), nil
 	}
+
+	projectFileMu.Lock()
+	defer projectFileMu.Unlock()
 
 	projectDir, err := findActiveProject()
 	if err != nil {
@@ -227,6 +236,9 @@ func (h *Handler) handleProjectDecision(_ context.Context, request mcp.CallToolR
 	if args.Text == "" {
 		return mcp.NewToolResultError("'text' is required"), nil
 	}
+
+	projectFileMu.Lock()
+	defer projectFileMu.Unlock()
 
 	projectDir, err := findActiveProject()
 	if err != nil {

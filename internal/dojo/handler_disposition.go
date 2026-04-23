@@ -6,9 +6,17 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 
+	"github.com/DojoGenesis/mcp-server/internal/fsutil"
 	"github.com/mark3labs/mcp-go/mcp"
 )
+
+// dojoSettingsMu serializes concurrent load-modify-write sequences on
+// ~/.dojo/settings.json. AtomicWriteFile prevents torn writes, but this mutex
+// prevents two concurrent goroutines from each reading the same stale state and
+// then overwriting each other's changes.
+var dojoSettingsMu sync.Mutex
 
 // dojoSettingsPath returns the path to ~/.dojo/settings.json.
 func dojoSettingsPath() (string, error) {
@@ -42,17 +50,14 @@ func loadDojoSettings(path string) (map[string]interface{}, error) {
 	return m, nil
 }
 
-// saveDojoSettings writes the settings map as indented JSON, creating the
-// parent directory if needed.
+// saveDojoSettings writes the settings map as indented JSON atomically.
+// Callers must hold dojoSettingsMu before calling this function.
 func saveDojoSettings(path string, m map[string]interface{}) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return fmt.Errorf("create settings dir: %w", err)
-	}
 	data, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
 		return fmt.Errorf("marshal settings: %w", err)
 	}
-	return os.WriteFile(path, data, 0o644)
+	return fsutil.AtomicWriteFile(path, data, 0o644)
 }
 
 // handleDispositionSet writes the selected disposition under the top-level
@@ -72,6 +77,9 @@ func (h *Handler) handleDispositionSet(_ context.Context, request mcp.CallToolRe
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Failed to resolve settings path: %v", err)), nil
 	}
+
+	dojoSettingsMu.Lock()
+	defer dojoSettingsMu.Unlock()
 
 	settings, err := loadDojoSettings(path)
 	if err != nil {
