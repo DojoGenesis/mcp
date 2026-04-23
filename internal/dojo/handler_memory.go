@@ -14,7 +14,7 @@ func (h *Handler) handleMemoryList(ctx context.Context, request mcp.CallToolRequ
 		return mcp.NewToolResultError("Gateway is not configured — memory operations require a connected Gateway"), nil
 	}
 
-	memories, err := h.gw.Memories(context.Background())
+	memories, err := h.gw.Memories(ctx)
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Gateway error: %v", err)), nil
 	}
@@ -60,7 +60,7 @@ func (h *Handler) handleMemoryStore(ctx context.Context, request mcp.CallToolReq
 		Content: args.Content,
 		Type:    args.Type,
 	}
-	stored, err := h.gw.StoreMemory(context.Background(), req)
+	stored, err := h.gw.StoreMemory(ctx, req)
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Failed to store memory: %v", err)), nil
 	}
@@ -83,7 +83,7 @@ func (h *Handler) handleMemorySearch(ctx context.Context, request mcp.CallToolRe
 		return mcp.NewToolResultError("'query' is required"), nil
 	}
 
-	matches, err := h.gw.SearchMemories(context.Background(), args.Query)
+	matches, err := h.gw.SearchMemories(ctx, args.Query)
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Search failed: %v", err)), nil
 	}

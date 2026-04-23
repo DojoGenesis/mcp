@@ -10,7 +10,7 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
-func (h *Handler) handleConverge(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func (h *Handler) handleConverge(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	// Run git status --short
 	statusOut, statusErr := runGit("status", "--short")
 	// Run git log --oneline --since="7 days ago"
@@ -48,10 +48,10 @@ func (h *Handler) handleConverge(_ context.Context, request mcp.CallToolRequest)
 
 	// Optionally enrich with Gateway metrics
 	if h.gw != nil {
-		if memories, err := h.gw.Memories(context.Background()); err == nil {
+		if memories, err := h.gw.Memories(ctx); err == nil {
 			fmt.Fprintf(&sb, "| Stored memories | %d |\n", len(memories))
 		}
-		if seeds, err := h.gw.Seeds(context.Background()); err == nil {
+		if seeds, err := h.gw.Seeds(ctx); err == nil {
 			fmt.Fprintf(&sb, "| Gateway seeds | %d |\n", len(seeds))
 		}
 	}
@@ -74,12 +74,12 @@ func (h *Handler) handleConverge(_ context.Context, request mcp.CallToolRequest)
 	return mcp.NewToolResultText(sb.String()), nil
 }
 
-func (h *Handler) handleHealth(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func (h *Handler) handleHealth(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	if h.gw == nil {
 		return mcp.NewToolResultError("Gateway is not configured"), nil
 	}
 
-	status, err := h.gw.Health(context.Background())
+	status, err := h.gw.Health(ctx)
 	if err != nil {
 		return mcp.NewToolResultText(fmt.Sprintf(
 			"# Gateway Health: UNREACHABLE\n\nError: %v", err,

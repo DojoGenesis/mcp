@@ -12,7 +12,7 @@ import (
 func (h *Handler) handleSeedList(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	// Try Gateway first; fall back to local wisdom base if offline or gw not configured.
 	if h.gw != nil {
-		seeds, err := h.gw.Seeds(context.Background())
+		seeds, err := h.gw.Seeds(ctx)
 		if err == nil {
 			if len(seeds) == 0 {
 				return mcp.NewToolResultText("No seeds found in Gateway.\n\nUse `dojo_seed_create` to create a seed."), nil
@@ -81,7 +81,7 @@ func (h *Handler) handleSeedCreate(ctx context.Context, request mcp.CallToolRequ
 		Description: args.Description,
 		Content:     args.Content,
 	}
-	created, err := h.gw.CreateSeed(context.Background(), req)
+	created, err := h.gw.CreateSeed(ctx, req)
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Failed to create seed: %v", err)), nil
 	}
@@ -105,7 +105,7 @@ func (h *Handler) handleSeedSearch(ctx context.Context, request mcp.CallToolRequ
 	// Try Gateway seeds; fall back to local.
 	var matches []gateway.Seed
 	if h.gw != nil {
-		gwSeeds, err := h.gw.Seeds(context.Background())
+		gwSeeds, err := h.gw.Seeds(ctx)
 		if err == nil {
 			for _, s := range gwSeeds {
 				if strings.Contains(strings.ToLower(s.Name), queryLower) ||
