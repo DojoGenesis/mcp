@@ -14,7 +14,7 @@ func (h *Handler) handleAgentList(ctx context.Context, request mcp.CallToolReque
 		return mcp.NewToolResultError("Gateway is not configured — agent operations require a connected Gateway"), nil
 	}
 
-	agents, err := h.gw.Agents(context.Background())
+	agents, err := h.gw.Agents(ctx)
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Failed to list agents: %v", err)), nil
 	}
@@ -63,12 +63,12 @@ func (h *Handler) handleAgentDispatch(ctx context.Context, request mcp.CallToolR
 		Name: args.Name,
 		Mode: args.Mode,
 	}
-	created, err := h.gw.CreateAgent(context.Background(), createReq)
+	created, err := h.gw.CreateAgent(ctx, createReq)
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Failed to create agent: %v", err)), nil
 	}
 
-	response, err := h.gw.AgentChatSync(context.Background(), created.ID, args.Message)
+	response, err := h.gw.AgentChatSync(ctx, created.ID, args.Message)
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Agent created (ID: %s) but chat failed: %v", created.ID, err)), nil
 	}
@@ -105,7 +105,7 @@ func (h *Handler) handleAgentChat(ctx context.Context, request mcp.CallToolReque
 		return mcp.NewToolResultError("'message' is required"), nil
 	}
 
-	response, err := h.gw.AgentChatSync(context.Background(), args.AgentID, args.Message)
+	response, err := h.gw.AgentChatSync(ctx, args.AgentID, args.Message)
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Chat failed for agent %s: %v", args.AgentID, err)), nil
 	}

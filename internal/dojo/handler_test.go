@@ -2,10 +2,13 @@ package dojo
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
 
+	"github.com/DojoGenesis/mcp-server/internal/gateway"
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
@@ -600,6 +603,76 @@ func TestScoutScaffold_WithMatchedSkills(t *testing.T) {
 	// Should contain methodology section if skills matched
 	if !strings.Contains(text, "strategic") {
 		t.Error("output should reference strategic content")
+	}
+}
+
+// --- Context propagation regression test ---
+
+// TestHandleMemoryStore_CancelledCtxPropagates verifies that when a pre-cancelled
+// context is passed to handleMemoryStore, the cancellation is propagated to the
+// outbound gateway HTTP request rather than being silently swallowed.
+//
+// The test spins up a real httptest.Server and records the context state of
+// each incoming request. Because the caller's ctx is already cancelled before
+// the handler is invoked, the gateway client's http.Do call must observe the
+// cancellation — either by rejecting the dial immediately (ctx.Err() is already
+// set on the request) or by returning a "context canceled" error. Either way the
+// test asserts that the context reaching the server-side handler is done.
+func TestHandleMemoryStore_CancelledCtxPropagates(t *testing.T) {
+	// Track the context state seen by the gateway's HTTP handler.
+	var serverSawCancelledCtx bool
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Record whether the request context was already cancelled upon arrival.
+		if r.Context().Err() != nil {
+			serverSawCancelledCtx = true
+		}
+		// Return a valid-enough JSON body so the client doesn't error on decode.
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		_, _ = w.Write([]byte(`{"memory":{"id":"test-id","content":"hello","type":"general"}}`))
+	}))
+	defer srv.Close()
+
+	// Build a handler with a real gateway.Client pointing at our test server.
+	tmpDir := t.TempDir()
+	gw := gateway.New(srv.URL, "")
+	h, err := NewHandler("", tmpDir, gw)
+	if err != nil {
+		t.Fatalf("NewHandler returned error: %v", err)
+	}
+
+	// Create a context that is already cancelled before we call the handler.
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // cancel immediately — ctx.Err() == context.Canceled from here on
+
+	req := newCallToolRequest(map[string]interface{}{
+		"content": "regression test memory",
+		"type":    "general",
+	})
+
+	// Call the handler. We don't care whether it returns an error result or not —
+	// the important invariant is that the ctx we passed was propagated outward.
+	// A secondary assertion: the cancellation must be observable, either at the
+	// server side or as a transport error that carries context.Canceled.
+	result, handlerErr := h.handleMemoryStore(ctx, req)
+	if handlerErr != nil {
+		t.Fatalf("handleMemoryStore returned unexpected Go error: %v", handlerErr)
+	}
+
+	// If the request reached the server, verify the context was cancelled there.
+	// If the request never reached the server (cancelled before dial), the handler
+	// must have returned an error result (not nil) — either way ctx was propagated.
+	if serverSawCancelledCtx {
+		// ctx.Err() was visible on the server side — propagation confirmed.
+		t.Logf("server saw cancelled ctx: propagation confirmed")
+	} else {
+		// The request was rejected before reaching the server.
+		// The handler should have returned an error result in that case.
+		if result == nil || !result.IsError {
+			t.Error("expected handler to return an error result when ctx is pre-cancelled and no server response arrived")
+		}
+		t.Logf("request rejected before server (connection refused or cancelled at dial): propagation confirmed")
 	}
 }
 
