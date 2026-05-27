@@ -31,10 +31,19 @@ func TestNewWriter_DefaultPath(t *testing.T) {
 
 func TestNewWriter_EmptyPath(t *testing.T) {
 	// Save and restore working directory
-	origDir, _ := os.Getwd()
+	origDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get working directory: %v", err)
+	}
 	tmpDir := t.TempDir()
-	os.Chdir(tmpDir)
-	defer os.Chdir(origDir)
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to chdir to tmpDir: %v", err)
+	}
+	defer func() {
+		if err := os.Chdir(origDir); err != nil {
+			t.Errorf("failed to restore working directory: %v", err)
+		}
+	}()
 
 	w, err := NewWriter("")
 	if err != nil {
