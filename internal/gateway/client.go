@@ -242,7 +242,7 @@ func (c *Client) ChatStream(ctx context.Context, req ChatRequest, onChunk func(S
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // SSE body close error is non-actionable
 
 	if resp.StatusCode != http.StatusOK {
 		b, _ := io.ReadAll(resp.Body)
@@ -299,7 +299,7 @@ func (c *Client) AgentChatSync(ctx context.Context, agentID string, message stri
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // SSE body close error is non-actionable
 
 	if resp.StatusCode != http.StatusOK {
 		rb, _ := io.ReadAll(resp.Body)
@@ -493,7 +493,7 @@ func (c *Client) get(ctx context.Context, path string, out any) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // body fully consumed by Decode/ReadAll before Close fires
 
 	if resp.StatusCode != http.StatusOK {
 		b, _ := io.ReadAll(resp.Body)
@@ -523,7 +523,7 @@ func (c *Client) post(ctx context.Context, path string, body any, out any) error
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // body fully consumed by Decode/ReadAll before Close fires
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusAccepted {
 		rb, _ := io.ReadAll(resp.Body)
