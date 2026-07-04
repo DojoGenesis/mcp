@@ -33,8 +33,10 @@ func TestNewWriter_EmptyPath(t *testing.T) {
 	// Save and restore working directory
 	origDir, _ := os.Getwd()
 	tmpDir := t.TempDir()
-	os.Chdir(tmpDir)
-	defer os.Chdir(origDir)
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("chdir to temp dir: %v", err)
+	}
+	defer func() { _ = os.Chdir(origDir) }()
 
 	w, err := NewWriter("")
 	if err != nil {

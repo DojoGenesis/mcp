@@ -209,10 +209,7 @@ func parseFrontmatterLines(content string) frontmatter {
 		// Find the first colon-space separator
 		idx := strings.Index(line, ": ")
 		if idx == -1 {
-			// Check for colon at end of line (key with empty value)
-			if strings.HasSuffix(line, ":") {
-				continue
-			}
+			// No "key: value" separator (includes a bare "key:" with empty value) — skip.
 			continue
 		}
 		key := strings.TrimSpace(line[:idx])
