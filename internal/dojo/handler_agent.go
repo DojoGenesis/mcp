@@ -45,9 +45,10 @@ func (h *Handler) handleAgentDispatch(ctx context.Context, request mcp.CallToolR
 	}
 
 	var args struct {
-		Name    string `json:"name"`
-		Mode    string `json:"mode"`
-		Message string `json:"message"`
+		Name          string `json:"name"`
+		Mode          string `json:"mode"`
+		Message       string `json:"message"`
+		WorkspaceRoot string `json:"workspace_root"`
 	}
 	if err := unmarshalArgs(request.Params.Arguments, &args); err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Invalid arguments: %v", err)), nil
@@ -59,9 +60,15 @@ func (h *Handler) handleAgentDispatch(ctx context.Context, request mcp.CallToolR
 		args.Mode = "chat"
 	}
 
+	wsRoot := args.WorkspaceRoot
+	if wsRoot == "" {
+		wsRoot = h.workspaceRoot
+	}
+
 	createReq := gateway.CreateAgentRequest{
-		Name: args.Name,
-		Mode: args.Mode,
+		Name:          args.Name,
+		Mode:          args.Mode,
+		WorkspaceRoot: wsRoot,
 	}
 	created, err := h.gw.CreateAgent(ctx, createReq)
 	if err != nil {

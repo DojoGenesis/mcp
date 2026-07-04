@@ -15,7 +15,7 @@ import (
 func newTestHandler(t *testing.T) *Handler {
 	t.Helper()
 	tmpDir := t.TempDir()
-	h, err := NewHandler("", tmpDir, nil)
+	h, err := NewHandler("", tmpDir, nil, "")
 	if err != nil {
 		t.Fatalf("NewHandler returned error: %v", err)
 	}
@@ -61,7 +61,7 @@ func TestNewHandler(t *testing.T) {
 
 func TestNewHandler_WithSkillsPath(t *testing.T) {
 	tmpDir := t.TempDir()
-	h, err := NewHandler("/nonexistent/path", tmpDir, nil)
+	h, err := NewHandler("/nonexistent/path", tmpDir, nil, "")
 	if err != nil {
 		t.Fatalf("NewHandler with nonexistent skills path should not error (falls back to bundled): %v", err)
 	}
@@ -637,7 +637,7 @@ func TestHandleMemoryStore_CancelledCtxPropagates(t *testing.T) {
 	// Build a handler with a real gateway.Client pointing at our test server.
 	tmpDir := t.TempDir()
 	gw := gateway.New(srv.URL, "")
-	h, err := NewHandler("", tmpDir, gw)
+	h, err := NewHandler("", tmpDir, gw, "")
 	if err != nil {
 		t.Fatalf("NewHandler returned error: %v", err)
 	}
