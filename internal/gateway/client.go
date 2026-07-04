@@ -170,7 +170,9 @@ type Agent struct {
 	Name        string `json:"name"`
 	Mode        string `json:"active_mode"`
 	Status      string `json:"status"`
-	Disposition string `json:"disposition"`
+	// Disposition is an opaque object on the gateway side ({Pacing,Depth,Tone,Initiative});
+	// the client never reads it, so accept any JSON shape rather than failing to unmarshal.
+	Disposition json.RawMessage `json:"disposition,omitempty"`
 }
 
 type agentsEnvelope struct {
