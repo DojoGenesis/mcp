@@ -6,19 +6,28 @@ import (
 
 // Config holds MCP server configuration.
 type Config struct {
-	GatewayURL   string
-	GatewayToken string
-	SkillsPath   string
-	ADRPath      string
+	GatewayURL    string
+	GatewayToken  string
+	SkillsPath    string
+	ADRPath       string
+	WorkspaceRoot string
 }
 
 // Load reads configuration from environment variables.
 func Load() *Config {
+	workspaceRoot := os.Getenv("DOJO_WORKSPACE_ROOT")
+	if workspaceRoot == "" {
+		if wd, err := os.Getwd(); err == nil {
+			workspaceRoot = wd
+		}
+	}
+
 	return &Config{
-		GatewayURL:   envOr("DOJO_GATEWAY_URL", "http://localhost:7340"),
-		GatewayToken: os.Getenv("DOJO_GATEWAY_TOKEN"),
-		SkillsPath:   os.Getenv("DOJO_SKILLS_PATH"),
-		ADRPath:      envOr("DOJO_ADR_PATH", "./decisions"),
+		GatewayURL:    envOr("DOJO_GATEWAY_URL", "http://localhost:7340"),
+		GatewayToken:  os.Getenv("DOJO_GATEWAY_TOKEN"),
+		SkillsPath:    os.Getenv("DOJO_SKILLS_PATH"),
+		ADRPath:       envOr("DOJO_ADR_PATH", "./decisions"),
+		WorkspaceRoot: workspaceRoot,
 	}
 }
 

@@ -32,7 +32,7 @@ func main() {
 		log.Printf("dojo-mcp-server: gateway offline at %s (offline mode active)", cfg.GatewayURL)
 	}
 
-	handler, err := dojo.NewHandler(cfg.SkillsPath, cfg.ADRPath, gw)
+	handler, err := dojo.NewHandler(cfg.SkillsPath, cfg.ADRPath, gw, cfg.WorkspaceRoot)
 	if err != nil {
 		log.Fatalf("Failed to initialize handler: %v", err)
 	}

@@ -20,11 +20,12 @@ type Handler struct {
 	skillsLoader   *skills.Loader
 	decisionWriter *decisions.Writer
 	gw             *gateway.Client
+	workspaceRoot  string
 }
 
 // NewHandler creates a new Dojo handler with skills loading and decision writing.
 // gw may be nil; tools will fall back to local data when gw is nil or offline.
-func NewHandler(skillsPath, adrPath string, gw *gateway.Client) (*Handler, error) {
+func NewHandler(skillsPath, adrPath string, gw *gateway.Client, workspaceRoot string) (*Handler, error) {
 	loader, err := skills.NewLoader(skillsPath)
 	if err != nil {
 		return nil, fmt.Errorf("load skills: %w", err)
@@ -40,6 +41,7 @@ func NewHandler(skillsPath, adrPath string, gw *gateway.Client) (*Handler, error
 		skillsLoader:   loader,
 		decisionWriter: writer,
 		gw:             gw,
+		workspaceRoot:  workspaceRoot,
 	}, nil
 }
 
@@ -270,9 +272,10 @@ func (h *Handler) RegisterTools(s *server.MCPServer) {
 		InputSchema: mcp.ToolInputSchema{
 			Type: "object",
 			Properties: map[string]interface{}{
-				"name":    map[string]interface{}{"type": "string", "description": "Agent name"},
-				"mode":    map[string]interface{}{"type": "string", "description": "Agent mode (e.g., 'focused', 'balanced', 'exploratory')"},
-				"message": map[string]interface{}{"type": "string", "description": "Initial task message for the agent"},
+				"name":           map[string]interface{}{"type": "string", "description": "Agent name"},
+				"mode":           map[string]interface{}{"type": "string", "description": "Agent mode (e.g., 'focused', 'balanced', 'exploratory')"},
+				"message":        map[string]interface{}{"type": "string", "description": "Initial task message for the agent"},
+				"workspace_root": map[string]interface{}{"type": "string", "description": "Optional workspace root path for the agent (defaults to server config)"},
 			},
 			Required: []string{"name", "message"},
 		},

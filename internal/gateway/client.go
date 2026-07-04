@@ -189,9 +189,10 @@ func (c *Client) Agents(ctx context.Context) ([]Agent, error) {
 
 // CreateAgentRequest is the body for POST /v1/gateway/agents.
 type CreateAgentRequest struct {
-	Name        string `json:"name,omitempty"`
-	Mode        string `json:"active_mode,omitempty"`
-	Disposition string `json:"disposition,omitempty"`
+	Name          string `json:"name,omitempty"`
+	Mode          string `json:"active_mode,omitempty"`
+	Disposition   string `json:"disposition,omitempty"`
+	WorkspaceRoot string `json:"workspace_root"`
 }
 
 // CreateAgent creates a new agent in the gateway.
