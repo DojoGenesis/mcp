@@ -45,9 +45,8 @@ func extractText(t *testing.T, result *mcp.CallToolResult) string {
 
 func TestNewHandler(t *testing.T) {
 	h := newTestHandler(t)
-	if h == nil {
-		t.Fatal("NewHandler returned nil")
-	}
+	// newTestHandler already fails the test if construction errored, and NewHandler
+	// never returns a nil handler on success, so assert the fields directly.
 	if h.wisdomBase == nil {
 		t.Error("handler has nil wisdomBase")
 	}

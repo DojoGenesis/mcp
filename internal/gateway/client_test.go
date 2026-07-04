@@ -14,9 +14,7 @@ import (
 
 func TestNew_CreatesValidClient(t *testing.T) {
 	c := New("http://localhost:7340", "my-token")
-	if c == nil {
-		t.Fatal("New returned nil")
-	}
+	// New is a constructor that never returns nil; assert the fields directly.
 	if c.http == nil {
 		t.Error("http client is nil")
 	}
