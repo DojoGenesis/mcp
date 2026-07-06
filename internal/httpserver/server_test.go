@@ -81,7 +81,7 @@ func TestHealth_NoAuthRequired(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GET /health: %v", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // test cleanup; close error non-actionable
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("/health status = %d, want 200", resp.StatusCode)
 	}
@@ -99,7 +99,7 @@ func TestMCP_401WithoutKey(t *testing.T) {
 	defer ts.Close()
 
 	resp := postJSON(t, ts, "/mcp", "", initializeBody)
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // test cleanup; close error non-actionable
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("keyless /mcp status = %d, want 401", resp.StatusCode)
 	}
@@ -113,7 +113,7 @@ func TestMCP_401WithWrongKey(t *testing.T) {
 	defer ts.Close()
 
 	resp := postJSON(t, ts, "/mcp", "wrong-key-material-0000000000000", initializeBody)
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // test cleanup; close error non-actionable
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("wrong-key /mcp status = %d, want 401", resp.StatusCode)
 	}
@@ -124,7 +124,7 @@ func TestMCP_InitializeWithKey(t *testing.T) {
 	defer ts.Close()
 
 	resp := postJSON(t, ts, "/mcp", testKey, initializeBody)
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // test cleanup; close error non-actionable
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("authed initialize status = %d, want 200", resp.StatusCode)
 	}
@@ -139,13 +139,13 @@ func TestMCP_PathKeyFallback(t *testing.T) {
 	defer ts.Close()
 
 	resp := postJSON(t, ts, "/mcp/k/"+testKey, "", initializeBody)
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // test cleanup; close error non-actionable
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("path-key initialize status = %d, want 200", resp.StatusCode)
 	}
 
 	resp2 := postJSON(t, ts, "/mcp/k/not-the-key-000000000000000000", "", initializeBody)
-	defer resp2.Body.Close()
+	defer resp2.Body.Close() //nolint:errcheck // test cleanup; close error non-actionable
 	if resp2.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("bad path-key status = %d, want 401", resp2.StatusCode)
 	}
@@ -160,7 +160,7 @@ func TestDispatchClassDenied(t *testing.T) {
 
 	callBody := `{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"dojo_agent_chat","arguments":{"agent_id":"a","message":"hi"}}}`
 	resp := postJSON(t, ts, "/mcp", testKey, callBody)
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // test cleanup; close error non-actionable
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("tools/call transport status = %d, want 200", resp.StatusCode)
 	}
@@ -179,7 +179,7 @@ func TestDispatchClassAllowedLabel(t *testing.T) {
 
 	callBody := `{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"dojo_agent_chat","arguments":{"agent_id":"a","message":"hi"}}}`
 	resp := postJSON(t, ts, "/mcp", testKey, callBody)
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // test cleanup; close error non-actionable
 	raw := readAll(t, resp)
 	if strings.Contains(raw, "not authorized for dispatch-class") {
 		t.Fatalf("allowlisted key was denied: %s", truncate(raw, 400))
