@@ -14,6 +14,7 @@ import (
 	"github.com/DojoGenesis/mcp/internal/dojo"
 	"github.com/DojoGenesis/mcp/internal/gateway"
 	"github.com/DojoGenesis/mcp/internal/httpserver"
+	"github.com/DojoGenesis/mcp/internal/memhub"
 	"github.com/mark3labs/mcp-go/server"
 )
 
@@ -35,6 +36,20 @@ func main() {
 	handler, err := dojo.NewHandler(cfg.SkillsPath, cfg.ADRPath, gw, cfg.WorkspaceRoot)
 	if err != nil {
 		log.Fatalf("Failed to initialize handler: %v", err)
+	}
+
+	if cfg.MemoryDBURL != "" {
+		hubClient, hubErr := memhub.New(ctx, cfg.MemoryDBURL)
+		if hubErr != nil {
+			log.Printf("WARN: memory hub disabled (bad DOJO_MEMORY_DB_URL): %v", hubErr)
+		} else {
+			if pingErr := hubClient.Ping(ctx); pingErr != nil {
+				log.Printf("WARN: memory hub configured but unreachable at startup (tools retry per call): %v", pingErr)
+			} else {
+				log.Printf("dojo-mcp-server: memory hub connected")
+			}
+			handler.SetHub(hubClient)
+		}
 	}
 
 	if cfg.HTTPAddr != "" {
