@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/DojoGenesis/mcp/internal/authz"
 	"github.com/DojoGenesis/mcp/internal/decisions"
 	"github.com/DojoGenesis/mcp/internal/gateway"
 	"github.com/DojoGenesis/mcp/internal/skills"
@@ -434,7 +435,9 @@ func (h *Handler) handleScout(ctx context.Context, request mcp.CallToolRequest) 
 	}
 
 	// If gateway is online, use ChatSync with the scout system prompt.
-	if h.gw != nil && h.gw.IsOnline(ctx) {
+	// The LLM path is dispatch-class spend: keys without dispatch permission
+	// degrade to the offline scaffold instead of erroring.
+	if h.gw != nil && authz.DispatchAllowed(ctx) && h.gw.IsOnline(ctx) {
 		prompt := fmt.Sprintf(`You are a strategic analysis assistant. Apply the 4-step Dojo scout framework to this situation:
 
 Situation: %s
