@@ -100,25 +100,44 @@ type StoreMemoryRequest struct {
 	Type    string `json:"type,omitempty"`
 }
 
-// StoreMemory creates a new memory entry.
+// StoreMemory creates a new memory entry. POST /v1/memory returns the created
+// memory as a BARE object (id/type/content/...), not wrapped in {"memory": ...};
+// parsing a wrapper left the returned ID/Type blank in the store confirmation.
 func (c *Client) StoreMemory(ctx context.Context, req StoreMemoryRequest) (*Memory, error) {
-	var wrapper struct {
-		Memory Memory `json:"memory"`
-	}
-	if err := c.post(ctx, "/v1/memory", req, &wrapper); err != nil {
+	var m Memory
+	if err := c.post(ctx, "/v1/memory", req, &m); err != nil {
 		return nil, err
 	}
-	return &wrapper.Memory, nil
+	return &m, nil
 }
 
-// SearchMemories performs a semantic search across memories.
+// searchResult is one hit from POST /v1/memory/search. The gateway returns hits
+// under "results" (relevance-scored) — a DIFFERENT envelope from GET /v1/memory's
+// "memories". Parsing a search response into memoriesResponse found no "memories"
+// key and silently dropped every hit, so search always returned "no matches".
+type searchResult struct {
+	ID      string `json:"id"`
+	Type    string `json:"type"`
+	Content string `json:"content"`
+}
+
+type searchResponse struct {
+	Results    []searchResult `json:"results"`
+	TotalCount int            `json:"total_count"`
+}
+
+// SearchMemories performs a text search across memories via POST /v1/memory/search.
 func (c *Client) SearchMemories(ctx context.Context, query string) ([]Memory, error) {
 	body := map[string]string{"query": query}
-	var r memoriesResponse
+	var r searchResponse
 	if err := c.post(ctx, "/v1/memory/search", body, &r); err != nil {
 		return nil, err
 	}
-	return r.Memories, nil
+	memories := make([]Memory, 0, len(r.Results))
+	for _, res := range r.Results {
+		memories = append(memories, Memory{ID: res.ID, Type: res.Type, Content: res.Content})
+	}
+	return memories, nil
 }
 
 // ─── Seeds ────────────────────────────────────────────────────────────────────

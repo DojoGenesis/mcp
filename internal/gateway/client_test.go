@@ -178,6 +178,71 @@ func TestMemories_ErrorOn500(t *testing.T) {
 	}
 }
 
+// ─── Memory search / store envelopes ──────────────────────────────────────────
+
+// Regression guard: the gateway returns search hits under "results", not
+// "memories". Parsing the wrong envelope made SearchMemories silently drop every
+// hit — dojo_memory_search returned "No memories found" even for an exact match
+// that dojo_memory_list showed.
+func TestSearchMemories_ParsesResultsEnvelope(t *testing.T) {
+	payload := `{"results":[{"id":"d843ef3f","type":"general","content":"DEBUGSENTINEL4242 probe","relevance_score":0}],"total_count":1}`
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/memory/search" || r.Method != http.MethodPost {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(payload))
+	}))
+	defer srv.Close()
+
+	c := New(srv.URL, "")
+	mems, err := c.SearchMemories(context.Background(), "DEBUGSENTINEL4242")
+	if err != nil {
+		t.Fatalf("SearchMemories() unexpected error: %v", err)
+	}
+	if len(mems) != 1 {
+		t.Fatalf("expected 1 match, got %d (results envelope not parsed?)", len(mems))
+	}
+	if mems[0].ID != "d843ef3f" {
+		t.Errorf("ID: got %q, want %q", mems[0].ID, "d843ef3f")
+	}
+	if mems[0].Content != "DEBUGSENTINEL4242 probe" {
+		t.Errorf("Content: got %q, want %q", mems[0].Content, "DEBUGSENTINEL4242 probe")
+	}
+	if mems[0].Type != "general" {
+		t.Errorf("Type: got %q, want %q", mems[0].Type, "general")
+	}
+}
+
+// POST /v1/memory returns the created memory as a bare object, not {"memory":...};
+// the wrapper parse left ID/Type blank in the store confirmation.
+func TestStoreMemory_ParsesBareResponse(t *testing.T) {
+	payload := `{"id":"abc123","type":"general","content":"hi"}`
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/memory" || r.Method != http.MethodPost {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		_, _ = w.Write([]byte(payload))
+	}))
+	defer srv.Close()
+
+	c := New(srv.URL, "")
+	mem, err := c.StoreMemory(context.Background(), StoreMemoryRequest{Content: "hi", Type: "general"})
+	if err != nil {
+		t.Fatalf("StoreMemory() unexpected error: %v", err)
+	}
+	if mem.ID != "abc123" {
+		t.Errorf("ID: got %q, want %q (bare response not parsed?)", mem.ID, "abc123")
+	}
+	if mem.Type != "general" {
+		t.Errorf("Type: got %q, want %q", mem.Type, "general")
+	}
+}
+
 // ─── Seeds ────────────────────────────────────────────────────────────────────
 
 func TestSeeds_ReturnsList(t *testing.T) {
