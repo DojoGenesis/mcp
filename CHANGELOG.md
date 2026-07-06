@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.0] - 2026-07-06
+
+Lane B: public MCP endpoint (OCH-132). Stdio mode is untouched.
+
+### Added
+- **HTTP mode** (`DOJO_HTTP_ADDR`): MCP streamable-HTTP at `/mcp` with
+  Bearer-key auth (`DOJO_MCP_API_KEYS`, labeled + individually revocable,
+  constant-time compare), `/mcp/k/<key>` path fallback, unauthenticated
+  `/health`. Fail-closed startup; graceful shutdown; SSE-safe timeouts.
+- **Dispatch-class gating**: `dojo_dispatch` / `dojo_agent_dispatch` /
+  `dojo_agent_chat` require an allowlisted key label
+  (`DOJO_DISPATCH_ALLOWED_LABELS`) and are rate limited per label
+  (`DOJO_DISPATCH_RATE_PER_MIN`, default 6). `dojo_scout`'s LLM path
+  degrades to the offline scaffold for non-dispatch keys.
+- **Memory Hub tools** (`DOJO_MEMORY_DB_URL`, read-only Postgres):
+  `dojo_search_memory` (websearch FTS + rank + snippets),
+  `dojo_get_memory`, `dojo_recent_memories`.
+- **`dojo_dispatch`**: prompt → LLM via the gateway.
+- **`dojo_fetch`**: unified search+fetch across memory hub, skills, ADRs,
+  and seeds with typed ids.
+- **Tool-call logging**: tool, key label, duration, outcome (no payloads,
+  no key material). HTTP access log attributes the key label.
+- **Docker publishing homed here**: `.github/workflows/docker-publish.yml`
+  → `ghcr.io/dojogenesis/mcp` (supersedes the manually-pushed
+  `mcpbydojogenesis` image; deployments pin by digest).
+- **`scripts/bridge/`**: repo-tracked copies of the Memory Hub mirror
+  pipeline + migrations (incl. `0002_dojo_mcp_ro_role.sql`), so schema
+  changes review against `internal/memhub`.
+
+### Changed
+- Module renamed `github.com/DojoGenesis/mcp-server` →
+  `github.com/DojoGenesis/mcp` (matches the canonical repo; `go install`
+  now resolves).
+- Windows test portability (USERPROFILE alongside HOME; skip Unix
+  permission-bit asserts).
+
 ## [3.0.0] - 2026-04-05
 
 ### Changed

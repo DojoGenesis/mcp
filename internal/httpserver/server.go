@@ -98,6 +98,7 @@ func (o Options) bearerAuth(next http.Handler) http.Handler {
 			unauthorized(w, r)
 			return
 		}
+		recordLabel(r, label)
 		ctx := authz.WithIdentity(r.Context(), label, o.DispatchLabels[label])
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -119,6 +120,7 @@ func (o Options) pathKeyAuth(next http.Handler) http.Handler {
 			unauthorized(w, r)
 			return
 		}
+		recordLabel(r, label)
 		r2 := r.Clone(authz.WithIdentity(r.Context(), label, o.DispatchLabels[label]))
 		r2.URL.Path = "/mcp" + tail
 		r2.URL.RawPath = ""
@@ -144,6 +146,18 @@ func unauthorized(w http.ResponseWriter, r *http.Request) {
 
 // ─── request logging ──────────────────────────────────────────────────────────
 
+// labelHolder lets the auth middleware report the authenticated label back
+// up to the request logger (context values only flow downward).
+type labelHolder struct{ label string }
+
+type holderCtxKey struct{}
+
+func recordLabel(r *http.Request, label string) {
+	if h, ok := r.Context().Value(holderCtxKey{}).(*labelHolder); ok {
+		h.label = label
+	}
+}
+
 // statusRecorder captures the response status while passing SSE flushes
 // through to the underlying writer.
 type statusRecorder struct {
@@ -165,9 +179,11 @@ func (sr *statusRecorder) Flush() {
 func requestLog(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
+		holder := &labelHolder{}
+		r = r.WithContext(context.WithValue(r.Context(), holderCtxKey{}, holder))
 		rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(rec, r)
-		label, _ := authz.Label(r.Context())
+		label := holder.label
 		if label == "" {
 			label = "-"
 		}
