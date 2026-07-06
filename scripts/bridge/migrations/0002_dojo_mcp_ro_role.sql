@@ -9,8 +9,12 @@
 --   ssh dojo-bridge \
 --     docker exec -i dojo-memory-db-1 \
 --       psql -U dojo_memory -d dojo_memory \
---         -v ro_password="'<GENERATED-PASSWORD>'" \
+--         -v ro_password="<GENERATED-PASSWORD>" \
 --         < /opt/dojo/memory-mirror/migrations/0002_dojo_mcp_ro_role.sql
+--
+--   NOTE: pass the bare value — :'ro_password' below adds the SQL quoting.
+--   Wrapping the -v value in extra single quotes bakes quote characters
+--   into the password itself (learned the hard way at first deploy).
 --
 --   Generate the password fresh (32+ random bytes); it lands in
 --   /opt/dojo/.env as part of DOJO_MEMORY_DB_URL for the mcp-http service.

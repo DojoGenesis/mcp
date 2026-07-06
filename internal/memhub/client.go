@@ -63,7 +63,7 @@ const searchSQL = `
 SELECT slug, name, type, coalesce(description, ''),
        coalesce(ts_headline('english', coalesce(body, ''),
                 websearch_to_tsquery('english', $1),
-                'MaxWords=35, MinWords=10, MaxFragments=2, FragmentDelimiter= … '), '') AS snippet,
+                'StartSel=**, StopSel=**, MaxWords=35, MinWords=10, MaxFragments=2, FragmentDelimiter= … '), '') AS snippet,
        coalesce(ts_rank(search_vector, websearch_to_tsquery('english', $1)), 0) AS rank,
        coalesce(updated::text, '')
 FROM memories
