@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/DojoGenesis/mcp-server/internal/fsutil"
+	"github.com/DojoGenesis/mcp/internal/fsutil"
 	"github.com/mark3labs/mcp-go/mcp"
 )
 

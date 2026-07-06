@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/DojoGenesis/mcp-server/internal/dojo"
+	"github.com/DojoGenesis/mcp/internal/dojo"
 	"github.com/mark3labs/mcp-go/server"
 )
 

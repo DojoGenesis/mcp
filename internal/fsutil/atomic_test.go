@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -49,6 +50,9 @@ func TestAtomicWriteFile_CreatesParentDir(t *testing.T) {
 // TestAtomicWriteFile_FilePermissions verifies the final file has the exact
 // mode passed to AtomicWriteFile.
 func TestAtomicWriteFile_FilePermissions(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Unix permission bits are not preserved on Windows (ACLs)")
+	}
 	tests := []struct {
 		perm os.FileMode
 	}{

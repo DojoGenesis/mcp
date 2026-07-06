@@ -67,17 +67,25 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 
 ## What's Included
 
-### Tools (7)
+### Tools (28)
 
-| Tool | Description |
-|------|-------------|
-| `dojo.scout` | 4-step strategic analysis scaffold. Frame tension, scout routes, synthesize, decide. |
-| `dojo.invoke_skill` | Load a specific methodology skill by name. Returns the full workflow as actionable steps. |
-| `dojo.search_skills` | Search the methodology library for skills matching a query. |
-| `dojo.apply_seed` | Apply a reusable thinking pattern (seed) to a specific situation with checklist. |
-| `dojo.log_decision` | Write an Architecture Decision Record (ADR) to disk. The only write-capable tool. |
-| `dojo.reflect` | Structured reflection grounded in matched skills and seeds from the methodology library. |
-| `dojo.list_skills` | List all available skills grouped by plugin category. |
+| Group | Tools |
+|-------|-------|
+| Methodology | `dojo_scout`, `dojo_invoke_skill`, `dojo_search_skills`, `dojo_list_skills`, `dojo_apply_seed`, `dojo_reflect` |
+| Decisions | `dojo_log_decision` (writes ADR markdown to `DOJO_ADR_PATH`) |
+| Gateway memory | `dojo_memory_list`, `dojo_memory_store`, `dojo_memory_search` (gateway session memory) |
+| **Memory Hub** | `dojo_search_memory`, `dojo_get_memory`, `dojo_recent_memories` — read-only Postgres mirror of the institutional memory (`DOJO_MEMORY_DB_URL`) |
+| **Unified fetch** | `dojo_fetch` — one tool to search AND fetch across memory hub + skills + ADRs + seeds (typed ids: `memory:slug`, `skill:name`, `adr:file.md`, `seed:name`) |
+| Seeds | `dojo_seed_list`, `dojo_seed_create`, `dojo_seed_search` |
+| Agents² | `dojo_agent_list`, `dojo_agent_dispatch`², `dojo_agent_chat`² |
+| **Dispatch²** | `dojo_dispatch`² — prompt → LLM through the gateway |
+| Project | `dojo_project_status`, `dojo_project_track`, `dojo_project_decision` |
+| Disposition | `dojo_disposition_list`, `dojo_disposition_set` |
+| Craft | `dojo_converge`, `dojo_health` |
+
+² **Dispatch-class** — spends LLM provider budget through the gateway. In HTTP
+mode these require a dispatch-enabled API key and are rate limited per key;
+`dojo_scout`'s LLM path degrades to its offline scaffold for non-dispatch keys.
 
 ### Skills (84 from CoworkPlugins, 35 bundled)
 
@@ -142,9 +150,55 @@ Documentation resources accessible via MCP resource URIs:
 | Env Var | Default | Description |
 |---------|---------|-------------|
 | `DOJO_SKILLS_PATH` | (bundled fallback) | Path to CoworkPlugins root directory containing `plugins/` |
-| `DOJO_ADR_PATH` | `./decisions` | Directory where `dojo.log_decision` writes ADR files |
+| `DOJO_ADR_PATH` | `./decisions` | Directory where `dojo_log_decision` writes ADR files |
+| `DOJO_GATEWAY_URL` | `http://localhost:7340` | Dojo AgenticGateway base URL |
+| `DOJO_GATEWAY_TOKEN` | (unset) | Bearer token for the gateway, if it requires one |
+| `DOJO_MEMORY_DB_URL` | (unset → hub tools disabled) | Postgres DSN for the Memory Hub (URL or keyword form; use the SELECT-only role) |
+| `DOJO_HTTP_ADDR` | (unset → stdio) | Opt into HTTP mode, e.g. `:8091` |
+| `DOJO_MCP_API_KEYS` | (unset) | HTTP mode only: comma-separated `label:key` pairs (individually revocable) |
+| `DOJO_DISPATCH_ALLOWED_LABELS` | (unset → none) | Key labels allowed to run dispatch-class tools |
+| `DOJO_DISPATCH_RATE_PER_MIN` | `6` | Per-label rate limit for dispatch-class tools |
 
-The server works out of the box with zero configuration (bundled skills, default ADR path).
+The server works out of the box with zero configuration (bundled skills, default ADR path, stdio).
+
+---
+
+## HTTP Mode (public endpoint)
+
+Setting `DOJO_HTTP_ADDR` serves MCP streamable-HTTP instead of stdio:
+
+- `POST/GET /mcp` — the MCP endpoint, Bearer-key required
+  (`Authorization: Bearer <key>`). Keyless or wrong-key requests get 401.
+- `/mcp/k/<key>` — same endpoint for clients that cannot send custom
+  headers; the key is redacted in logs.
+- `GET /health` — unauthenticated liveness (status + version only).
+
+The server refuses to start in HTTP mode without a valid, non-empty
+`DOJO_MCP_API_KEYS`. Every tool call is logged as
+`tool_call tool=… key=<label> dur_ms=… outcome=…` — labels only, never key
+material, never payloads.
+
+```bash
+DOJO_HTTP_ADDR=:8091 \
+DOJO_MCP_API_KEYS="win:$(openssl rand -hex 32)" \
+./dojo-mcp-server
+
+curl -s localhost:8091/health
+curl -s -X POST localhost:8091/mcp \
+  -H "Authorization: Bearer <key>" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"curl","version":"0"}}}'
+```
+
+Client wiring (Claude Code): `claude mcp add --transport http dojo-remote
+https://<host>/mcp --header "Authorization: Bearer <key>"`.
+
+Deployment notes: ingress is expected to be a Cloudflare tunnel (no host
+ports); pin the container image **by digest** so auto-pull never
+surprise-deploys a new public surface. Image publishing:
+`.github/workflows/docker-publish.yml` → `ghcr.io/dojogenesis/mcp`
+(supersedes the old manually-pushed `mcpbydojogenesis` image).
 
 ---
 

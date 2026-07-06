@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/DojoGenesis/mcp-server/internal/gateway"
+	"github.com/DojoGenesis/mcp/internal/gateway"
 	"github.com/mark3labs/mcp-go/mcp"
 )
 

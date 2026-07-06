@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/DojoGenesis/mcp-server/internal/fsutil"
+	"github.com/DojoGenesis/mcp/internal/fsutil"
 )
 
 // uniquePath returns fp unchanged if it does not exist, otherwise appends _2,

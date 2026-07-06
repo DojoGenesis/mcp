@@ -1,8 +1,8 @@
 # Dojo Genesis MCP Server -- Status
 
-**Version:** 3.0.0
-**Module:** `github.com/DojoGenesis/mcp-server`
-**Last Updated:** 2026-04-09
+**Version:** 3.2.0
+**Module:** `github.com/DojoGenesis/mcp`
+**Last Updated:** 2026-07-06
 
 ## Health
 
@@ -18,7 +18,7 @@
 
 | Category | Count | Details |
 |----------|-------|---------|
-| Tools | 7 | scout, invoke_skill, search_skills, apply_seed, log_decision, reflect, list_skills |
+| Tools | 28 | 7 methodology + 3 gateway-memory + 3 Memory Hub (Postgres) + dojo_fetch + dojo_dispatch + 3 seeds + 3 agents + 3 project + 2 disposition + converge/health |
 | Seed Patches | 20 | 10 Dojo Genesis + 10 AROMA/Serenity Valley |
 | Skills | 43 bundled / 683 with CoworkPlugins | 683 community + 80 first-party; loaded from SKILL.md files at startup |
 | Resources | 8 + skills | Philosophy, principles, norms, design, synthesis, protocol, modes, planning + all loaded skills |
@@ -28,19 +28,19 @@
 | Dependency | Version | Notes |
 |------------|---------|-------|
 | Go | 1.23+ | Required |
-| `mcp-go` | v0.47.0 | MCP protocol library |
+| `mcp-go` | v0.47.0 | MCP protocol library (stdio + streamable HTTP) |
 | `gopkg.in/yaml.v3` | latest | YAML frontmatter parsing |
+| `jackc/pgx/v5` | v5.10.0 | Memory Hub (read-only Postgres) |
 
 ## Configuration
 
-| Env Var | Default | Description |
-|---------|---------|-------------|
-| `DOJO_SKILLS_PATH` | (bundled) | Path to CoworkPlugins directory |
-| `DOJO_ADR_PATH` | `./decisions` | ADR output directory |
+See README Configuration — full env table (skills, ADR, gateway, memory hub,
+HTTP mode: `DOJO_HTTP_ADDR`, `DOJO_MCP_API_KEYS`,
+`DOJO_DISPATCH_ALLOWED_LABELS`, `DOJO_DISPATCH_RATE_PER_MIN`).
 
 ## Architecture
 
-- **Transport:** stdio (standard MCP transport)
+- **Transport:** stdio (default) or streamable HTTP behind Bearer-key auth (`DOJO_HTTP_ADDR`, OCH-132 Lane B)
 - **Binary:** Single self-contained executable
 - **Skills:** Loaded from filesystem at startup, with bundled fallback
 - **Write capability:** `dojo.log_decision` writes ADR markdown files to disk

@@ -6,13 +6,23 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/DojoGenesis/mcp-server/internal/decisions"
-	"github.com/DojoGenesis/mcp-server/internal/gateway"
-	"github.com/DojoGenesis/mcp-server/internal/skills"
-	"github.com/DojoGenesis/mcp-server/internal/wisdom"
+	"github.com/DojoGenesis/mcp/internal/authz"
+	"github.com/DojoGenesis/mcp/internal/decisions"
+	"github.com/DojoGenesis/mcp/internal/gateway"
+	"github.com/DojoGenesis/mcp/internal/memhub"
+	"github.com/DojoGenesis/mcp/internal/skills"
+	"github.com/DojoGenesis/mcp/internal/wisdom"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
+
+// Hub is the read-only Memory Hub surface used by the hub-backed memory
+// tools. Satisfied by *memhub.Client; nil means no hub is configured.
+type Hub interface {
+	SearchMemories(ctx context.Context, query, typ string, limit int) ([]memhub.Entry, error)
+	GetMemory(ctx context.Context, slug string) (*memhub.Entry, error)
+	RecentMemories(ctx context.Context, typ string, limit int) ([]memhub.Entry, error)
+}
 
 // Handler manages all Dojo MCP capabilities.
 type Handler struct {
@@ -20,6 +30,7 @@ type Handler struct {
 	skillsLoader   *skills.Loader
 	decisionWriter *decisions.Writer
 	gw             *gateway.Client
+	hub            Hub
 	workspaceRoot  string
 }
 
@@ -45,6 +56,11 @@ func NewHandler(skillsPath, adrPath string, gw *gateway.Client, workspaceRoot st
 	}, nil
 }
 
+// SetHub attaches the Memory Hub client. Callers must pass a non-nil
+// implementation only (assigning a typed nil pointer into the interface
+// would defeat the h.hub == nil guards).
+func (h *Handler) SetHub(hub Hub) { h.hub = hub }
+
 // unmarshalArgs is a helper to convert arguments (any type) to a typed struct.
 func unmarshalArgs(arguments any, dest interface{}) error {
 	data, err := json.Marshal(arguments)
@@ -54,7 +70,7 @@ func unmarshalArgs(arguments any, dest interface{}) error {
 	return json.Unmarshal(data, dest)
 }
 
-// RegisterTools registers all 24 Dojo tools with the MCP server.
+// RegisterTools registers all Dojo tools with the MCP server.
 func (h *Handler) RegisterTools(s *server.MCPServer) {
 	// Tool 1: dojo.scout
 	s.AddTool(mcp.Tool{
@@ -351,7 +367,88 @@ func (h *Handler) RegisterTools(s *server.MCPServer) {
 		},
 	}, h.handleDispositionSet)
 
-	// ─── Craft tools (22-24) ────────────────────────────────────────────────
+	// ─── Memory Hub tools (Postgres mirror of the institutional memory) ────
+
+	s.AddTool(mcp.Tool{
+		Name: "dojo_search_memory",
+		Description: "Search the shared Memory Hub: ranked full-text search over the TresPies/DojoGenesis " +
+			"institutional memory (400+ entries mirrored from the orchestration repo — projects, feedback, " +
+			"references, seeds). Supports websearch syntax (quoted phrases, OR, -exclusions). " +
+			"Distinct from dojo_memory_search, which queries gateway session memory.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"query": map[string]interface{}{"type": "string", "description": "What to search for"},
+				"type":  map[string]interface{}{"type": "string", "description": "Optional type filter (e.g., 'project', 'feedback', 'reference', 'seed')"},
+				"limit": map[string]interface{}{"type": "integer", "description": "Max results (default 8, max 25)"},
+			},
+			Required: []string{"query"},
+		},
+	}, h.handleSearchMemoryHub)
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_get_memory",
+		Description: "Fetch the full body of one Memory Hub entry by slug (as returned by dojo_search_memory / dojo_recent_memories).",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"slug": map[string]interface{}{"type": "string", "description": "The memory slug to fetch"},
+			},
+			Required: []string{"slug"},
+		},
+	}, h.handleGetMemoryHub)
+
+	s.AddTool(mcp.Tool{
+		Name:        "dojo_recent_memories",
+		Description: "List the most recently updated Memory Hub entries — orientation on connect. Optional type filter.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"type":  map[string]interface{}{"type": "string", "description": "Optional type filter (e.g., 'project', 'feedback', 'reference', 'seed')"},
+				"limit": map[string]interface{}{"type": "integer", "description": "Max results (default 10, max 50)"},
+			},
+		},
+	}, h.handleRecentMemoriesHub)
+
+	// ─── Dispatch + unified fetch ───────────────────────────────────────────
+
+	s.AddTool(mcp.Tool{
+		Name: "dojo_dispatch",
+		Description: "Dispatch a prompt to an LLM through the Dojo Gateway and return the reply. " +
+			"DISPATCH-CLASS: spends provider budget; on the public endpoint it requires a dispatch-enabled " +
+			"API key and is rate limited per key.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"prompt":     map[string]interface{}{"type": "string", "description": "The prompt to send"},
+				"session_id": map[string]interface{}{"type": "string", "description": "Optional gateway session id for continuity"},
+			},
+			Required: []string{"prompt"},
+		},
+	}, h.handleDispatch)
+
+	s.AddTool(mcp.Tool{
+		Name: "dojo_fetch",
+		Description: "One tool to search AND fetch across the whole dojo store: Memory Hub, skills corpus, " +
+			"ADRs, and seed patches. Query mode returns a ranked, typed result list with fetchable ids; " +
+			"id mode (e.g. 'memory:night-shift-family', 'skill:debugging', 'adr:2026-07-05_x.md', 'seed:name') " +
+			"returns the full content.",
+		InputSchema: mcp.ToolInputSchema{
+			Type: "object",
+			Properties: map[string]interface{}{
+				"query": map[string]interface{}{"type": "string", "description": "Search text (required unless id is given)"},
+				"id":    map[string]interface{}{"type": "string", "description": "Typed id 'store:key' to fetch full content"},
+				"stores": map[string]interface{}{
+					"type":        "array",
+					"items":       map[string]interface{}{"type": "string", "enum": []string{"memory", "skill", "adr", "seed"}},
+					"description": "Stores to search (default: all)",
+				},
+				"limit": map[string]interface{}{"type": "integer", "description": "Max merged results (default 8, max 25)"},
+			},
+		},
+	}, h.handleFetch)
+
+	// ─── Craft tools ────────────────────────────────────────────────────────
 
 	s.AddTool(mcp.Tool{
 		Name:        "dojo_converge",
@@ -434,7 +531,9 @@ func (h *Handler) handleScout(ctx context.Context, request mcp.CallToolRequest) 
 	}
 
 	// If gateway is online, use ChatSync with the scout system prompt.
-	if h.gw != nil && h.gw.IsOnline(ctx) {
+	// The LLM path is dispatch-class spend: keys without dispatch permission
+	// degrade to the offline scaffold instead of erroring.
+	if h.gw != nil && authz.DispatchAllowed(ctx) && h.gw.IsOnline(ctx) {
 		prompt := fmt.Sprintf(`You are a strategic analysis assistant. Apply the 4-step Dojo scout framework to this situation:
 
 Situation: %s
