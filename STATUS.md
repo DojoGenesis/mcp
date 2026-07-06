@@ -27,7 +27,7 @@
 
 | Dependency | Version | Notes |
 |------------|---------|-------|
-| Go | 1.23+ | Required |
+| Go | 1.25+ | Required (go.mod directive; pgx v5 pulled the floor up) |
 | `mcp-go` | v0.47.0 | MCP protocol library (stdio + streamable HTTP) |
 | `gopkg.in/yaml.v3` | latest | YAML frontmatter parsing |
 | `jackc/pgx/v5` | v5.10.0 | Memory Hub (read-only Postgres) |
