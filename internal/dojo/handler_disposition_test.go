@@ -11,7 +11,7 @@ import (
 
 func TestHandleDispositionSet_CreatesFileWhenMissing(t *testing.T) {
 	tmpHome := t.TempDir()
-	t.Setenv("HOME", tmpHome)
+	setTestHome(t, tmpHome)
 
 	h := newTestHandler(t)
 	req := newCallToolRequest(map[string]interface{}{"disposition": "focused"})
@@ -46,7 +46,7 @@ func TestHandleDispositionSet_CreatesFileWhenMissing(t *testing.T) {
 
 func TestHandleDispositionSet_PreservesExistingKeys(t *testing.T) {
 	tmpHome := t.TempDir()
-	t.Setenv("HOME", tmpHome)
+	setTestHome(t, tmpHome)
 
 	// Seed an existing settings.json with unrelated keys
 	dir := filepath.Join(tmpHome, ".dojo")
@@ -105,7 +105,7 @@ func TestHandleDispositionSet_PreservesExistingKeys(t *testing.T) {
 
 func TestHandleDispositionSet_RejectsEmpty(t *testing.T) {
 	tmpHome := t.TempDir()
-	t.Setenv("HOME", tmpHome)
+	setTestHome(t, tmpHome)
 
 	h := newTestHandler(t)
 	req := newCallToolRequest(map[string]interface{}{"disposition": ""})
@@ -116,4 +116,13 @@ func TestHandleDispositionSet_RejectsEmpty(t *testing.T) {
 	if result == nil || !result.IsError {
 		t.Fatalf("expected error result for empty disposition, got %+v", result)
 	}
+}
+
+// setTestHome points the user home directory at dir for the duration of the
+// test, covering both Unix (HOME) and Windows (USERPROFILE) lookups used by
+// os.UserHomeDir.
+func setTestHome(t *testing.T, dir string) {
+	t.Helper()
+	t.Setenv("HOME", dir)
+	t.Setenv("USERPROFILE", dir)
 }

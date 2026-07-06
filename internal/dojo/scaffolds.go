@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/DojoGenesis/mcp-server/internal/skills"
-	"github.com/DojoGenesis/mcp-server/internal/wisdom"
+	"github.com/DojoGenesis/mcp/internal/skills"
+	"github.com/DojoGenesis/mcp/internal/wisdom"
 )
 
 // scoutScaffold returns the 4-step strategic analysis scaffold.

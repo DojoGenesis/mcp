@@ -4,9 +4,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/DojoGenesis/mcp-server/internal/config"
-	"github.com/DojoGenesis/mcp-server/internal/dojo"
-	"github.com/DojoGenesis/mcp-server/internal/gateway"
+	"github.com/DojoGenesis/mcp/internal/config"
+	"github.com/DojoGenesis/mcp/internal/dojo"
+	"github.com/DojoGenesis/mcp/internal/gateway"
 	"github.com/mark3labs/mcp-go/server"
 )
 

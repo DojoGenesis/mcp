@@ -1,4 +1,4 @@
-module github.com/DojoGenesis/mcp-server
+module github.com/DojoGenesis/mcp
 
 go 1.23.2
 

@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/DojoGenesis/mcp-server/internal/decisions"
-	"github.com/DojoGenesis/mcp-server/internal/gateway"
-	"github.com/DojoGenesis/mcp-server/internal/skills"
-	"github.com/DojoGenesis/mcp-server/internal/wisdom"
+	"github.com/DojoGenesis/mcp/internal/decisions"
+	"github.com/DojoGenesis/mcp/internal/gateway"
+	"github.com/DojoGenesis/mcp/internal/skills"
+	"github.com/DojoGenesis/mcp/internal/wisdom"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )

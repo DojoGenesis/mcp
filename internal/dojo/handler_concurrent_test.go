@@ -19,7 +19,7 @@ import (
 // load-modify-write races corrupt the file.
 func TestSaveDojoSettings_ConcurrentWrites(t *testing.T) {
 	tmpHome := t.TempDir()
-	t.Setenv("HOME", tmpHome)
+	setTestHome(t, tmpHome)
 
 	dir := filepath.Join(tmpHome, ".dojo")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -79,7 +79,7 @@ func TestSaveDojoSettings_ConcurrentWrites(t *testing.T) {
 // equal to one of the written payloads (not torn/mixed).
 func TestSaveProject_ConcurrentWrites(t *testing.T) {
 	tmpHome := t.TempDir()
-	t.Setenv("HOME", tmpHome)
+	setTestHome(t, tmpHome)
 
 	// Ensure the projects dir exists with a default project so handlers find it.
 	projectDir := filepath.Join(tmpHome, ".dojo", "projects", "default")
