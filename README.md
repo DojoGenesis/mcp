@@ -9,6 +9,7 @@ Every other MCP server gives Claude more data. This one gives Claude better *met
 [![Go](https://img.shields.io/badge/Go-1.23+-00ADD8?logo=go&logoColor=white)](https://go.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-compatible-blueviolet)](https://modelcontextprotocol.io)
+[![LobeHub](https://lobehub.com/badge/mcp/dojogenesis-mcp-server)](https://lobehub.com/mcp/dojogenesis-mcp-server)
 
 ---
 
