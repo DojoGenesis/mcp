@@ -43,7 +43,7 @@ jobs:
         with:
           images: ghcr.io/dojogenesis/mcp
           labels: |
-            io.modelcontextprotocol.server.name=io.github.dojogenesis/mcp
+            io.modelcontextprotocol.server.name=io.github.DojoGenesis/mcp
           tags: |
             type=sha,format=long
             type=semver,pattern={{version}}
