@@ -11,8 +11,7 @@
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/dojogenesis/mcp",
-      "version": "3.2.1",
+      "identifier": "ghcr.io/dojogenesis/mcp:3.2.1",
       "transport": {
         "type": "stdio"
       },
