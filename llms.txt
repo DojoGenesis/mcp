@@ -1,10 +1,10 @@
 # DojoGenesis MCP Server
 
-> The methodology layer for Claude Code — 7 tools and 84 first-party methodology skills as active cognitive scaffolds for AI agents.
+> The methodology layer for Claude Code — 28 tools and 99 first-party methodology skills as active cognitive scaffolds for AI agents.
 
 ## What this is
 
-The Dojo MCP Server is not a data source — it is a methods source. Every other MCP server gives AI agents more data. This one gives them better thinking frameworks. It encodes 60+ battle-tested methodology skills as active cognitive scaffolds, making Claude measurably better at software development decisions. Skills are loaded from the DojoGenesis plugins collection and exposed via the MCP protocol.
+The Dojo MCP Server is a methods source rather than a data source. It encodes methodology skills as active cognitive scaffolds for software development decisions. Whether these scaffolds improve Claude's decisions has not yet been measured. Skills are loaded from the DojoGenesis plugins collection and exposed via the MCP protocol.
 
 ## Key capabilities
 

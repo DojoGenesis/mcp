@@ -1,8 +1,8 @@
 # Dojo Genesis MCP Server
 
-The methodology layer for Claude Code -- the first MCP server that makes Claude measurably better at software development decisions by encoding 99 first-party working methods across 10 behavioral plugins as active cognitive scaffolds.
+The methodology layer for Claude Code. It encodes 99 first-party working methods across 10 behavioral plugins as active cognitive scaffolds: instead of giving Claude more data, it gives Claude structured *methods* for software development decisions.
 
-Every other MCP server gives Claude more data. This one gives Claude better *methods*.
+We have not yet measured whether these scaffolds improve Claude's decisions, so this README makes no claim that they do.
 
 <!-- Badges -->
 [![CI](https://github.com/DojoGenesis/mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/DojoGenesis/mcp/actions/workflows/ci.yml)
@@ -88,9 +88,9 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 mode these require a dispatch-enabled API key and are rate limited per key;
 `dojo_scout`'s LLM path degrades to its offline scaffold for non-dispatch keys.
 
-### Skills (99 from CoworkPlugins, 35 bundled)
+### Skills (99 from CoworkPlugins, 43 bundled)
 
-Skills are complete, battle-tested methodology workflows loaded from SKILL.md files at startup. When `DOJO_SKILLS_PATH` is set, all 99 first-party CoworkPlugins skills are available. Without it, 35 key skills across 7 plugins are embedded in the binary via `go:embed`.
+Skills are complete, battle-tested methodology workflows loaded from SKILL.md files at startup. When `DOJO_SKILLS_PATH` is set, all 99 first-party CoworkPlugins skills are available. Without it, 43 key skills across 8 plugins are embedded in the binary via `go:embed`.
 
 **Bundled plugins and skills:**
 

@@ -2,7 +2,7 @@
 
 **Version:** 3.2.0
 **Module:** `github.com/DojoGenesis/mcp`
-**Last Updated:** 2026-07-06
+**Last Updated:** 2026-10-18
 
 ## Health
 
@@ -10,7 +10,7 @@
 |-------|--------|
 | `go build ./...` | Pass |
 | `go vet ./...` | Pass |
-| `go test -race ./...` | Pass (90+ tests) |
+| `go test ./...` | Pass (170+ test functions, 2026-10-18) |
 | CI pipeline | Configured (.github/workflows/ci.yml) |
 | Release config | Configured (.goreleaser.yml) |
 
@@ -20,7 +20,7 @@
 |----------|-------|---------|
 | Tools | 28 | 7 methodology + 3 gateway-memory + 3 Memory Hub (Postgres) + dojo_fetch + dojo_dispatch + 3 seeds + 3 agents + 3 project + 2 disposition + converge/health |
 | Seed Patches | 20 | 10 Dojo Genesis + 10 AROMA/Serenity Valley |
-| Skills | 43 bundled / 683 with CoworkPlugins | 683 community + 80 first-party; loaded from SKILL.md files at startup |
+| Skills | 43 bundled / 99 first-party with CoworkPlugins | Bundled set embedded via `go:embed`; the full first-party set loads from `DOJO_SKILLS_PATH` (count synced 2026-07-15) |
 | Resources | 8 + skills | Philosophy, principles, norms, design, synthesis, protocol, modes, planning + all loaded skills |
 
 ## Dependencies
