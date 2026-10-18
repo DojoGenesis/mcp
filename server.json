@@ -18,7 +18,7 @@
       "environmentVariables": [
         {
           "name": "DOJO_SKILLS_PATH",
-          "description": "Path to a CoworkPlugins checkout for the full first-party practice library; 35 bundled skills are used when unset",
+          "description": "Path to a CoworkPlugins checkout for the full first-party practice library; 43 bundled skills are used when unset",
           "isRequired": false,
           "format": "string",
           "isSecret": false
