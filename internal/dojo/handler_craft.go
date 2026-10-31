@@ -11,25 +11,41 @@ import (
 )
 
 func (h *Handler) handleConverge(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	dir := h.workspaceRoot
+	if dir == "" {
+		return mcp.NewToolResultError("# Convergence Check: DID NOT RUN\n\nNo directory to check. Set `DOJO_WORKSPACE_ROOT` to a git repository.\n"), nil
+	}
+
 	// Run git status --short
-	statusOut, statusErr := runGit("status", "--short")
+	statusOut, statusErr := runGit(dir, "status", "--short")
+	if statusErr != nil {
+		// A check that did not run must never fall through to the GREEN signal.
+		return mcp.NewToolResultError(fmt.Sprintf(
+			"# Convergence Check: DID NOT RUN\n\nDirectory: `%s`\n\n`git status` failed there, so the dirty-file count is unknown. This is not a clean result.\n\nError: %v\n\nSet `DOJO_WORKSPACE_ROOT` to a git repository, or start the server inside one.\n",
+			dir, statusErr,
+		)), nil
+	}
 	// Run git log --oneline --since="7 days ago"
-	logOut, logErr := runGit("log", "--oneline", "--since=7 days ago")
+	logOut, logErr := runGit(dir, "log", "--oneline", "--since=7 days ago")
 
 	var sb strings.Builder
 
 	// Count dirty files
 	dirtyCount := 0
-	if statusErr == nil && strings.TrimSpace(statusOut) != "" {
+	if strings.TrimSpace(statusOut) != "" {
 		lines := strings.Split(strings.TrimSpace(statusOut), "\n")
 		dirtyCount = len(lines)
 	}
 
 	// Count recent commits
-	commitCount := 0
-	if logErr == nil && strings.TrimSpace(logOut) != "" {
-		lines := strings.Split(strings.TrimSpace(logOut), "\n")
-		commitCount = len(lines)
+	commits := "unknown"
+	if logErr == nil {
+		commitCount := 0
+		if strings.TrimSpace(logOut) != "" {
+			lines := strings.Split(strings.TrimSpace(logOut), "\n")
+			commitCount = len(lines)
+		}
+		commits = fmt.Sprintf("%d", commitCount)
 	}
 
 	// Determine signal
@@ -43,8 +59,9 @@ func (h *Handler) handleConverge(ctx context.Context, request mcp.CallToolReques
 	fmt.Fprintf(&sb, "# Convergence Check: %s\n\n", signal)
 	fmt.Fprintf(&sb, "| Metric | Value |\n")
 	fmt.Fprintf(&sb, "|--------|-------|\n")
+	fmt.Fprintf(&sb, "| Directory | `%s` |\n", dir)
 	fmt.Fprintf(&sb, "| Dirty files | %d |\n", dirtyCount)
-	fmt.Fprintf(&sb, "| Commits (last 7 days) | %d |\n", commitCount)
+	fmt.Fprintf(&sb, "| Commits (last 7 days) | %s |\n", commits)
 
 	// Optionally enrich with Gateway metrics
 	if h.gw != nil {
@@ -64,10 +81,16 @@ func (h *Handler) handleConverge(ctx context.Context, request mcp.CallToolReques
 	case "YELLOW":
 		fmt.Fprintf(&sb, "**YELLOW** — %d dirty files. Consider committing work-in-progress before the next dispatch.\n", dirtyCount)
 	default:
-		fmt.Fprintf(&sb, "**GREEN** — workspace is clean. Ready for new work.\n")
+		fmt.Fprintf(&sb, "**GREEN** — %d dirty files in `%s`. Ready for new work.\n", dirtyCount, dir)
 	}
 
-	if statusErr == nil && strings.TrimSpace(statusOut) != "" {
+	fmt.Fprintf(&sb, "\nThis check reads one directory, not every repo in the workspace.\n")
+
+	if logErr != nil {
+		fmt.Fprintf(&sb, "\n`git log` failed, so the commit count is unknown: %v\n", logErr)
+	}
+
+	if strings.TrimSpace(statusOut) != "" {
 		fmt.Fprintf(&sb, "\n## Dirty Files\n\n```\n%s\n```\n", strings.TrimSpace(statusOut))
 	}
 
@@ -155,15 +178,19 @@ func (h *Handler) handleDispositionList(_ context.Context, request mcp.CallToolR
 	return mcp.NewToolResultText(sb.String()), nil
 }
 
-// runGit runs a git command and returns stdout and any error.
-func runGit(args ...string) (string, error) {
+// runGit runs a git command in dir and returns stdout and any error.
+func runGit(dir string, args ...string) (string, error) {
 	cmd := exec.Command("git", args...)
+	cmd.Dir = dir
 	var out bytes.Buffer
 	var errBuf bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &errBuf
 	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("%w: %s", err, strings.TrimSpace(errBuf.String()))
+		if msg := strings.TrimSpace(errBuf.String()); msg != "" {
+			return "", fmt.Errorf("%w: %s", err, msg)
+		}
+		return "", err
 	}
 	return out.String(), nil
 }

@@ -452,7 +452,7 @@ func (h *Handler) RegisterTools(s *server.MCPServer) {
 
 	s.AddTool(mcp.Tool{
 		Name:        "dojo_converge",
-		Description: "Run a convergence check: git dirty files, recent commits, memory/seed counts. Returns RED/YELLOW/GREEN signal with guidance.",
+		Description: "Run a convergence check on one git repository (DOJO_WORKSPACE_ROOT, else the server's startup directory): dirty files, recent commits, memory/seed counts. Returns RED/YELLOW/GREEN signal with guidance, or DID NOT RUN when git fails there.",
 		InputSchema: mcp.ToolInputSchema{Type: "object", Properties: map[string]interface{}{}},
 	}, h.handleConverge)
 
