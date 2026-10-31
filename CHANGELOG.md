@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- **`dojo_converge` no longer reports GREEN when git fails.** It swallowed the
+  `git status` error and counted 0 dirty files, so a directory that is not a
+  repository read as a clean workspace. It now returns an error result headed
+  `DID NOT RUN`, reads `DOJO_WORKSPACE_ROOT` instead of ignoring it, names the
+  directory it checked, and shows the commit count as `unknown` when `git log`
+  fails.
+
 ## [3.2.0] - 2026-07-06
 
 Lane B: public MCP endpoint (OCH-132). Stdio mode is untouched.
